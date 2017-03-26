@@ -1,0 +1,5 @@
+﻿  Event.cpp
+h:\documents\projets\rhythmgame\includes\collider.h(61): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+h:\documents\projets\rhythmgame\sources\event.cpp(68): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+  RhythmGame.vcxproj -> H:\Documents\Projets\RhythmGame\Debug\RhythmGame.exe
+  RhythmGame.vcxproj -> H:\Documents\Projets\RhythmGame\Debug\RhythmGame.pdb (Full PDB)
