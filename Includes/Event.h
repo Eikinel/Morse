@@ -2,10 +2,9 @@
 
 # include "Constants.h"
 # include "Entity.h"
-# include "Button.h"
-# include <iostream>
 
-class IScreen;
+enum	eGamestate;
+class	IScreen;
 
 class				IEvent
 {

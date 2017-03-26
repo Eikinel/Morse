@@ -1,12 +1,10 @@
 #pragma once
 
-# include <vector>
 # include "Constants.h"
-# include "Event.h"
-# include "Collider.h"
 
 class IEvent;
 class Button;
+class Note;
 
 enum				eGamestate
 {
@@ -58,11 +56,9 @@ public:
 	GameScreen(sf::RenderWindow& window);
 	virtual ~GameScreen();
 
-	//GETTERS
-	virtual std::vector<Button *>&	getButtons();
+	const std::vector<sf::VertexArray>&	getCross() const;
 
 protected:
-	std::vector<Button *>	_buttons;
-	sf::Texture				_map_texture;
-	sf::Sprite				_map;
+	std::vector<Note *>				_notes; // Map file with all notes will be here
+	std::vector<sf::VertexArray>	_cross;
 };

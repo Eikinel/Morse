@@ -1,6 +1,7 @@
-#include <iostream>
 #include "Screen.h"
+#include "Event.h"
 #include "Button.h"
+#include "Note.h"
 
 
 //CONSTRUCTORS
@@ -40,6 +41,17 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	std::cout << std::endl << "Creating game screen" << std::endl;
 	this->_events.push_back(new WindowDefaultEvent); // Event handler for options, close window, etc.
 	this->_events.push_back(new GameEvent); // Update game, draw it and react in terms of user inputs.
+
+	sf::Vector2f		win_size(window.getSize());
+	sf::VertexArray		va_tmp(sf::LinesStrip, 2);
+
+	va_tmp[0].color = va_tmp[1].color = sf::Color::Green;
+	va_tmp[0].position = sf::Vector2f(win_size.x / 2.f, 0);
+	va_tmp[1].position = sf::Vector2f(win_size.x / 2.f, win_size.y);
+	this->_cross.push_back(va_tmp);
+	va_tmp[0].position = sf::Vector2f(0, win_size.y / 2.f);
+	va_tmp[1].position = sf::Vector2f(win_size.x, win_size.y / 2.f);
+	this->_cross.push_back(va_tmp);
 }
 
 IScreen::~IScreen()
@@ -59,8 +71,6 @@ MenuScreen::~MenuScreen()
 GameScreen::~GameScreen()
 {
 	std::cout << "Deleting game screen" << std::endl;
-	for (std::vector<Button *>::const_iterator it = this->_buttons.begin(); it != this->_buttons.end(); ++it)
-		delete (*it);
 }
 
 
@@ -90,9 +100,9 @@ std::vector<Button *>&	MenuScreen::getButtons()
 	return (this->_buttons);
 }
 
-std::vector<Button *>&	GameScreen::getButtons()
+const std::vector<sf::VertexArray>&	GameScreen::getCross() const
 {
-	return (this->_buttons);
+	return (this->_cross);
 }
 
 

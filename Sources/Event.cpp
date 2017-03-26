@@ -113,7 +113,10 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 
 void		GameEvent::draw(IScreen& screen)
 {
-	GameScreen*	mscreen = static_cast<GameScreen *>(&screen);
+	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
+
+	for (auto it : gscreen->getCross())
+		gscreen->draw(it);
 }
 
 

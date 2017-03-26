@@ -155,6 +155,7 @@
     <ClCompile Include="..\Sources\Button.cpp" />
     <ClCompile Include="..\Sources\Event.cpp" />
     <ClCompile Include="..\Sources\Main.cpp" />
+    <ClCompile Include="..\Sources\Note.cpp" />
     <ClCompile Include="..\Sources\Screen.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +164,7 @@
     <ClInclude Include="..\Includes\Constants.h" />
     <ClInclude Include="..\Includes\Entity.h" />
     <ClInclude Include="..\Includes\Event.h" />
+    <ClInclude Include="..\Includes\Note.h" />
     <ClInclude Include="..\Includes\Screen.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
