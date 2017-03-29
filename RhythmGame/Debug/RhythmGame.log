@@ -1,15 +1,5 @@
 ﻿  Event.cpp
 h:\documents\projets\rhythmgame\includes\collider.h(61): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-h:\documents\projets\rhythmgame\sources\event.cpp(68): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-  Génération de code en cours...
-  Compilation en cours...
-  Screen.cpp
-h:\documents\projets\rhythmgame\sources\screen.cpp(24): warning C4244: 'argument' : conversion de 'float' en 'const std::size_t', perte possible de données
-h:\documents\projets\rhythmgame\sources\screen.cpp(27): warning C4244: 'argument' : conversion de 'float' en 'const std::size_t', perte possible de données
-h:\documents\projets\rhythmgame\sources\screen.cpp(30): warning C4244: 'argument' : conversion de 'float' en 'const std::size_t', perte possible de données
-h:\documents\projets\rhythmgame\sources\screen.cpp(33): warning C4244: 'argument' : conversion de 'float' en 'const std::size_t', perte possible de données
-  Génération de code en cours...
-  Ignoré... (aucune modification pertinente détectée)
-  Main.cpp
+h:\documents\projets\rhythmgame\sources\event.cpp(71): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
   RhythmGame.vcxproj -> H:\Documents\Projets\RhythmGame\Debug\RhythmGame.exe
   RhythmGame.vcxproj -> H:\Documents\Projets\RhythmGame\Debug\RhythmGame.pdb (Full PDB)

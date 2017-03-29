@@ -49,6 +49,7 @@ public:
 
 protected:
 	std::vector<bool>	_toggle_options;
+	sf::Clock			_general_clock;
 };
 
 class				WindowDefaultEvent : public IEvent
@@ -76,4 +77,7 @@ public:
 
 	virtual int		update(IScreen& screen, sf::Event& event);
 	virtual void	draw(IScreen& screen);
+
+private:
+	sf::Clock	_clock;
 };

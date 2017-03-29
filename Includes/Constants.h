@@ -9,7 +9,7 @@
 # define SPRITES_DIR	ASSETS_DIR"/Sprites"
 # define FONTS_DIR		ASSETS_DIR"/Fonts"
 
-# define GAME_NAME	"Rhythm Game"
+# define GAME_NAME	"Morse"
 
 // Global variable for screens, containing menu, game, etc.
 class IScreen;

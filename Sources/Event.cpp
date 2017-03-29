@@ -9,6 +9,7 @@ IEvent::IEvent()
 {
 	std::cout << "Creating default options" << std::endl;
 	this->_toggle_options.push_back(false); // On/off bounding boxes draw
+	this->_general_clock.restart().asSeconds();
 }
 
 WindowDefaultEvent::WindowDefaultEvent()
@@ -24,6 +25,7 @@ MenuEvent::MenuEvent()
 GameEvent::GameEvent()
 {
 	std::cout << "Creating game event" << std::endl;
+	this->_clock.restart();
 }
 
 
@@ -60,6 +62,7 @@ int		MenuEvent::update(IScreen& screen, sf::Event& event)
 		break;
 	case sf::Event::MouseButtonReleased:
 		std::cout << "MenuEvent : Click !" << std::endl;
+		std::cout << "Position : [" << event.mouseButton.x << " ; " << event.mouseButton.y << "]." << std::endl;
 
 		for (auto it : mscreen->getButtons())
 		{
@@ -83,12 +86,14 @@ void		MenuEvent::draw(IScreen& screen)
 
 	for (auto it : mscreen->getButtons())
 		mscreen->draw(it->getText());
+	mscreen->draw(mscreen->getFPSText());
 }
 
 int		GameEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 
+	std::cout << "Time: " << this->_clock.getElapsedTime().asSeconds() << std::endl;
 	switch (event.type)
 	{
 	case sf::Event::KeyPressed:
@@ -103,6 +108,7 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 		break;
 	case sf::Event::MouseButtonReleased:
 		std::cout << "GameEvent : Click !" << std::endl;
+		std::cout << "Position : [" << event.mouseButton.x << " ; " << event.mouseButton.y << "]." << std::endl;
 		break;
 	default:
 		break;
@@ -117,6 +123,7 @@ void		GameEvent::draw(IScreen& screen)
 
 	for (auto it : gscreen->getCross())
 		gscreen->draw(it);
+	gscreen->draw(gscreen->getFPSText());
 }
 
 

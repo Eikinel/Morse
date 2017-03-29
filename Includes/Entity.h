@@ -8,8 +8,6 @@
 enum			eEntityType
 {
 	CURSOR,
-	SHORT_NOTE,
-	LONG_NOTE,
 	SIZE
 };
 

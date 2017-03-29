@@ -1,9 +1,14 @@
 #pragma once
 
-# include "Entity.h"
+# include "Constants.h"
 
-class			Note : public Entity<sf::RectangleShape>
+class			Note
 {
-private:
+public:
+	Note(const sf::Time& time, const float duration);
+	virtual ~Note();
 
+protected:
+	sf::Time	_time;
+	float		_duration; // 0.f = short note
 };
