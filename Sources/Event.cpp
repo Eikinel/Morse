@@ -2,6 +2,7 @@
 #include "Screen.h"
 #include "Button.h"
 #include "Collider.h"
+#include "Skin.h"
 
 
 //CONSTRUCTORS

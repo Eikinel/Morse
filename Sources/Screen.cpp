@@ -2,6 +2,7 @@
 #include "Event.h"
 #include "Button.h"
 #include "Note.h"
+#include "Skin.h"
 
 
 //CONSTRUCTORS
@@ -36,7 +37,7 @@ MenuScreen::MenuScreen(sf::RenderWindow& window) : IScreen(window, MENU)
 	this->_buttons.push_back(new Button(GAME_NAME, win_size.y / 4.f, sf::Vector2f(
 		win_size.x / 2.f,
 		win_size.y / 20.f), CENTER));
-	this->_buttons.push_back(new Button("New Game", win_size.y / 6.f, sf::Vector2f(
+	this->_buttons.push_back(new Button("Play", win_size.y / 6.f, sf::Vector2f(
 		win_size.x / 2.f,
 		win_size.y / 2.5f), CENTER));
 	this->_buttons.push_back(new Button("Options", win_size.y / 6.f, sf::Vector2f(
@@ -66,6 +67,8 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	va_tmp[0].position = sf::Vector2f(0, win_size.y / 2.f);
 	va_tmp[1].position = sf::Vector2f(win_size.x, win_size.y / 2.f);
 	this->_cross.push_back(va_tmp);
+	this->_skin = new Skin();
+	this->_speed = 1;
 }
 
 IScreen::~IScreen()
@@ -87,6 +90,7 @@ GameScreen::~GameScreen()
 	std::cout << "Deleting game screen" << std::endl;
 	for (auto it : this->_notes)
 		delete (it);
+	delete(this->_skin);
 }
 
 
@@ -148,9 +152,19 @@ const Note&	GameScreen::getNextNote(int index) const
 	return (*this->_notes[index]);
 }
 
+const Skin&	GameScreen::getSkin() const
+{
+	return (*this->_skin);
+}
+
+const unsigned int	GameScreen::getSpeed() const
+{
+	return (this->_speed);
+}
+
 
 //SETTERS
-void	IScreen::setFPS()
+void	IScreen::updateFPS()
 {
 	float	current_time = this->_clock.restart().asSeconds();
 
@@ -186,7 +200,7 @@ int		IScreen::run()
 		it->draw(*this);
 	this->_window.display();
 
-	this->setFPS();
+	this->updateFPS();
 	return (this->_index);
 }
 
@@ -212,7 +226,7 @@ int		GameScreen::run()
 		it->draw(*this);
 	this->_window.display();
 
-	this->setFPS();
+	this->updateFPS();
 	return (this->_index);
 }
 

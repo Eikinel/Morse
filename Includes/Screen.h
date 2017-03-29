@@ -5,6 +5,7 @@
 class IEvent;
 class Button;
 class Note;
+class Skin;
 
 enum				eGamestate
 {
@@ -30,7 +31,7 @@ public:
 	virtual const unsigned int		getFrameLimiter() const;
 
 	//SETTERS
-	virtual void	setFPS();
+	virtual void	updateFPS();
 	virtual void	setFrameLimiter(const unsigned int frame_limiter);
 
 	//METHODS
@@ -75,6 +76,8 @@ public:
 	const std::vector<sf::VertexArray>&	getCross() const;
 	const std::vector<Note *>&			getNotes() const;
 	const Note&							getNextNote(int index) const;
+	const Skin&							getSkin() const;
+	const unsigned int					getSpeed() const;
 
 	//METHODS
 	virtual int		run();
@@ -82,4 +85,6 @@ public:
 protected:
 	std::vector<Note *>				_notes; // Map file with all notes will be here
 	std::vector<sf::VertexArray>	_cross;
+	Skin*							_skin;
+	unsigned int					_speed;
 };

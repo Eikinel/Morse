@@ -6,8 +6,8 @@
 
 // Directories
 # define ASSETS_DIR		"../Assets"
-# define SPRITES_DIR	ASSETS_DIR"/Sprites"
 # define FONTS_DIR		ASSETS_DIR"/Fonts"
+# define SKIN_DIR		ASSETS_DIR"/Skin"
 
 # define GAME_NAME	"Morse"
 
