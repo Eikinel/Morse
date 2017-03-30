@@ -46,7 +46,6 @@ protected:
 
 	//FPS handling
 	sf::Clock		_clock;
-	float			_last_time;
 	float			_fps;
 	unsigned int	_frame_limiter;
 	sf::Font		_main_font;
@@ -78,6 +77,7 @@ public:
 	const Note&							getNextNote(int index) const;
 	const Skin&							getSkin() const;
 	const unsigned int					getSpeed() const;
+	const sf::Sprite&					getCursor() const;
 
 	//METHODS
 	virtual int		run();
@@ -87,4 +87,5 @@ protected:
 	std::vector<sf::VertexArray>	_cross;
 	Skin*							_skin;
 	unsigned int					_speed;
+	sf::Sprite						_cursor;
 };

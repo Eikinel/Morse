@@ -79,5 +79,6 @@ public:
 	virtual void	draw(IScreen& screen);
 
 private:
-	sf::Clock	_clock;
+	sf::Clock		_clock;
+	unsigned int	_next;
 };

@@ -12,7 +12,6 @@ IScreen::IScreen(sf::RenderWindow& window, eGamestate state) : _window(window), 
 
 	this->_index = all_screens.size();
 	this->_frame_limiter = 120;
-	this->_last_time = 0.f;
 	this->_fps = 0.f;
 	if (!this->_main_font.loadFromFile(FONTS_DIR"/Meatloaf Sketched.ttf"))
 		std::cerr << "Failed to load font " << FONTS_DIR"/Meatloaf Sketched.ttf" << std::endl;
@@ -67,8 +66,28 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	va_tmp[0].position = sf::Vector2f(0, win_size.y / 2.f);
 	va_tmp[1].position = sf::Vector2f(win_size.x, win_size.y / 2.f);
 	this->_cross.push_back(va_tmp);
+	this->_speed = 1000;
 	this->_skin = new Skin();
-	this->_speed = 1;
+	this->_notes.push_back(new Note(sf::seconds(1.f), 0,
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(2.f), 0,
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(3.3f), 0,
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(3.6f), 0,
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(5.f), 0,
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_cursor.setTexture(this->_skin->getComponent(eSkinComponent::SK_CURSOR));
+	this->_cursor.setOrigin(sf::Vector2f(
+		this->_cursor.getGlobalBounds().width / 2.f,
+		this->_cursor.getGlobalBounds().height / 2.f));
+	this->_cursor.setPosition(sf::Vector2f(win_size.x / 2.f, win_size.y / 2.f));
 }
 
 IScreen::~IScreen()
@@ -88,8 +107,6 @@ MenuScreen::~MenuScreen()
 GameScreen::~GameScreen()
 {
 	std::cout << "Deleting game screen" << std::endl;
-	for (auto it : this->_notes)
-		delete (it);
 	delete(this->_skin);
 }
 
@@ -162,15 +179,27 @@ const unsigned int	GameScreen::getSpeed() const
 	return (this->_speed);
 }
 
+const sf::Sprite&	GameScreen::getCursor() const
+{
+	return (this->_cursor);
+}
+
 
 //SETTERS
 void	IScreen::updateFPS()
 {
-	float	current_time = this->_clock.restart().asSeconds();
+	float			current_time;
+	static sf::Time	freeze = sf::seconds(1.f);
+
+	freeze += this->_clock.getElapsedTime();
+	current_time = this->_clock.restart().asSeconds();
 
 	this->_fps = 1.f / current_time;
-	this->_last_time = current_time;
-	this->_fps_text.setString(sf::String(std::to_string((int)std::round(this->_fps)) + " / " + std::to_string(this->_frame_limiter)));
+	if (freeze.asSeconds() >= 1.f)
+	{
+		this->_fps_text.setString(sf::String(std::to_string((int)std::round(this->_fps)) + " / " + std::to_string(this->_frame_limiter)));
+		freeze = sf::Time::Zero;
+	}
 }
 
 void	IScreen::setFrameLimiter(const unsigned int frame_limiter)
@@ -182,8 +211,8 @@ void	IScreen::setFrameLimiter(const unsigned int frame_limiter)
 //METHODS
 int		IScreen::run()
 {
-	int				status;
-	sf::Event		event;
+	int					status;
+	sf::Event			event;
 
 	while (this->_window.pollEvent(event))
 	{

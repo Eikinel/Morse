@@ -8,7 +8,7 @@
 enum			eEntityType
 {
 	CURSOR,
-	SIZE
+	ENT_SIZE
 };
 
 template <typename T>

@@ -3,6 +3,7 @@
 #include "Button.h"
 #include "Collider.h"
 #include "Skin.h"
+#include "Note.h"
 
 
 //CONSTRUCTORS
@@ -27,6 +28,7 @@ GameEvent::GameEvent()
 {
 	std::cout << "Creating game event" << std::endl;
 	this->_clock.restart();
+	this->_next = 0;
 }
 
 
@@ -115,6 +117,22 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 		break;
 	}
 
+	if (this->_next < gscreen->getNotes().size())
+	{
+		for (auto it : gscreen->getNextNote(this->_next).getSprites())
+		{
+			it->setPosition(sf::Vector2f(
+				gscreen->getCursor().getPosition().x + (gscreen->getNextNote(this->_next).getTime().asSeconds() - this->_clock.getElapsedTime().asSeconds()) * gscreen->getSpeed(),
+				gscreen->getWindow().getSize().y / 2.f));
+		}
+		if (gscreen->getNextNote(this->_next).getSprites()[0]->getPosition().x < gscreen->getCursor().getPosition().x)
+		{
+			delete (gscreen->getNotes()[this->_next]);
+			std::cout << "Note deleted" << std::endl;
+			this->_next++;
+		}
+	}
+
 	return (screen.getIndex());
 }
 
@@ -124,7 +142,11 @@ void		GameEvent::draw(IScreen& screen)
 
 	for (auto it : gscreen->getCross())
 		gscreen->draw(it);
+	gscreen->draw(gscreen->getCursor());
 	gscreen->draw(gscreen->getFPSText());
+	if (this->_next < gscreen->getNotes().size())
+		for (auto it : gscreen->getNextNote(this->_next).getSprites())
+			gscreen->draw(*it);
 }
 
 

@@ -4,9 +4,10 @@
 
 enum	eSkinComponent
 {
-	NOTE,
-	NOTE_OUTLINE,
-	SKIN_SIZE
+	SK_NOTE,
+	SK_NOTE_OUTLINE,
+	SK_CURSOR,
+	SK_SIZE
 };
 
 class			Skin
@@ -17,13 +18,9 @@ public:
 	~Skin();
 
 	//GETTERS
-	const sf::Sprite&	getComponent(eSkinComponent index) const;
-
-	//SETTERS
-	//void	setComponent(const std::string& path, eSkinComponent index);
+	const sf::Texture&	getComponent(eSkinComponent index) const;
 
 private:
 	//TEXTURES
 	std::vector<sf::Texture *>	_textures;
-	std::vector<sf::Sprite *>	_sprites;
 };
