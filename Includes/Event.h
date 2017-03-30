@@ -5,6 +5,7 @@
 
 enum	eGamestate;
 class	IScreen;
+class	Note;
 
 class				IEvent
 {
@@ -79,6 +80,6 @@ public:
 	virtual void	draw(IScreen& screen);
 
 private:
-	sf::Clock		_clock;
-	unsigned int	_next;
+	sf::Clock			_game_clock;
+	std::vector<Note *>	_next_notes;
 };

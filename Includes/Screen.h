@@ -74,10 +74,14 @@ public:
 	//GETTERS
 	const std::vector<sf::VertexArray>&	getCross() const;
 	const std::vector<Note *>&			getNotes() const;
-	const Note&							getNextNote(int index) const;
+	const std::vector<Note *>			getNextNotes(const sf::Time& time) const;
+	const Note&							getNoteByIndex(unsigned int index) const;
 	const Skin&							getSkin() const;
 	const unsigned int					getSpeed() const;
 	const sf::Sprite&					getCursor() const;
+
+	//SETTERS
+	void	removeNote(const Note& note);
 
 	//METHODS
 	virtual int		run();

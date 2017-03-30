@@ -66,21 +66,21 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	va_tmp[0].position = sf::Vector2f(0, win_size.y / 2.f);
 	va_tmp[1].position = sf::Vector2f(win_size.x, win_size.y / 2.f);
 	this->_cross.push_back(va_tmp);
-	this->_speed = 1000;
+	this->_speed = 1;
 	this->_skin = new Skin();
-	this->_notes.push_back(new Note(sf::seconds(1.f), 0,
+	this->_notes.push_back(new Note(sf::seconds(1.f), 0, sf::Vector2i(-1, 0),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(2.f), 0,
+	this->_notes.push_back(new Note(sf::seconds(1.2f), 0, sf::Vector2i(1, 0),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(3.3f), 0,
+	this->_notes.push_back(new Note(sf::seconds(1.3f), 0, sf::Vector2i(0, -1),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(3.6f), 0,
+	this->_notes.push_back(new Note(sf::seconds(1.9f), 0, sf::Vector2i(0, 1),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(5.f), 0,
+	this->_notes.push_back(new Note(sf::seconds(11.f), 0, sf::Vector2i(-1, 0),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
 	this->_cursor.setTexture(this->_skin->getComponent(eSkinComponent::SK_CURSOR));
@@ -164,7 +164,22 @@ const std::vector<Note *>&	GameScreen::getNotes() const
 	return (this->_notes);
 }
 
-const Note&	GameScreen::getNextNote(int index) const
+const std::vector<Note *>	GameScreen::getNextNotes(const sf::Time& time) const
+{
+	std::vector<Note *>		next_notes;
+
+	for (auto it : this->_notes)
+	{
+		if ((it->getTime().asSeconds() - time.asSeconds()) < MAX_TIMING_VIEW / this->_speed)
+			next_notes.push_back(it);
+		else
+			break;
+	}
+
+	return (next_notes);
+}
+
+const Note&	GameScreen::getNoteByIndex(unsigned int index) const
 {
 	return (*this->_notes[index]);
 }
@@ -205,6 +220,21 @@ void	IScreen::updateFPS()
 void	IScreen::setFrameLimiter(const unsigned int frame_limiter)
 {
 	this->_frame_limiter = frame_limiter;
+}
+
+void	GameScreen::removeNote(const Note& note)
+{
+	for (auto it = this->_notes.begin(); it != this->_notes.end(); ++it)
+	{
+		if (**it == note)
+		{
+			delete (*it);
+			this->_notes.erase(it);
+			std::cout << "Note deleted" << std::endl;
+			return;
+		}
+	}
+	std::cerr << "Note not found" << std::endl;
 }
 
 

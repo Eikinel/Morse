@@ -27,8 +27,7 @@ MenuEvent::MenuEvent()
 GameEvent::GameEvent()
 {
 	std::cout << "Creating game event" << std::endl;
-	this->_clock.restart();
-	this->_next = 0;
+	this->_game_clock.restart();
 }
 
 
@@ -96,7 +95,7 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 
-	std::cout << "Time: " << this->_clock.getElapsedTime().asSeconds() << std::endl;
+	std::cout << "Time: " << this->_game_clock.getElapsedTime().asSeconds() << std::endl;
 	switch (event.type)
 	{
 	case sf::Event::KeyPressed:
@@ -117,19 +116,25 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 		break;
 	}
 
-	if (this->_next < gscreen->getNotes().size())
+	if ((this->_next_notes = gscreen->getNextNotes(this->_game_clock.getElapsedTime())).size() > 0)
 	{
-		for (auto it : gscreen->getNextNote(this->_next).getSprites())
+		for (auto it : this->_next_notes)
 		{
-			it->setPosition(sf::Vector2f(
-				gscreen->getCursor().getPosition().x + (gscreen->getNextNote(this->_next).getTime().asSeconds() - this->_clock.getElapsedTime().asSeconds()) * gscreen->getSpeed(),
-				gscreen->getWindow().getSize().y / 2.f));
+			for (auto it2 : it->getSprites())
+				it2->setPosition(sf::Vector2f(
+					gscreen->getCursor().getPosition().x + ((it->getTime().asSeconds() - this->_game_clock.getElapsedTime().asSeconds()) * gscreen->getSpeed() * MAX_SPEED) * it->getDirection().x,
+					gscreen->getCursor().getPosition().y + ((it->getTime().asSeconds() - this->_game_clock.getElapsedTime().asSeconds()) * gscreen->getSpeed() * MAX_SPEED) * it->getDirection().y));
 		}
-		if (gscreen->getNextNote(this->_next).getSprites()[0]->getPosition().x < gscreen->getCursor().getPosition().x)
+
+		for (auto it = this->_next_notes.begin(); it != this->_next_notes.end();)
 		{
-			delete (gscreen->getNotes()[this->_next]);
-			std::cout << "Note deleted" << std::endl;
-			this->_next++;
+			if (this->_game_clock.getElapsedTime() > (*it)->getTime())
+			{
+				gscreen->removeNote(**it);
+				it = this->_next_notes.erase(it);
+			}
+			else
+				++it;
 		}
 	}
 
@@ -144,9 +149,10 @@ void		GameEvent::draw(IScreen& screen)
 		gscreen->draw(it);
 	gscreen->draw(gscreen->getCursor());
 	gscreen->draw(gscreen->getFPSText());
-	if (this->_next < gscreen->getNotes().size())
-		for (auto it : gscreen->getNextNote(this->_next).getSprites())
-			gscreen->draw(*it);
+
+	for (auto it : this->_next_notes)
+		for (auto it2 : it->getSprites())
+			gscreen->draw(*it2);
 }
 
 
