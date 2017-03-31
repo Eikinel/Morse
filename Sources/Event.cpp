@@ -129,23 +129,28 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 	case sf::Event::KeyPressed:
 		if (this->_next_notes.size() > 0)
 		{
-			sf::Vector2i	direction = this->_next_notes[0]->getDirection();
-			sf::Time		delta_accuracy = sf::seconds(MAX_TIMING_VIEW + 1.f);
+			std::vector<Note *>	same_timing = gscreen->getNotesWithSameTiming(this->_next_notes[0]->getTime());
 
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && direction.y == -1)
-				delta_accuracy = this->_game_clock.getElapsedTime() - this->_next_notes[0]->getTime();
-			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
-				delta_accuracy = this->_game_clock.getElapsedTime() - this->_next_notes[0]->getTime();
-			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
-				delta_accuracy = this->_game_clock.getElapsedTime() - this->_next_notes[0]->getTime();
-			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
-				delta_accuracy = this->_game_clock.getElapsedTime() - this->_next_notes[0]->getTime();
-
-			if (delta_accuracy < sf::seconds(MAX_TIMING_VIEW + 1.f))
+			for (auto it : same_timing)
 			{
-				std::cout << "Delta accuracy : " << delta_accuracy.asMilliseconds() << std::endl;
-				gscreen->setSpriteAccuracy(this->getAccuracy(delta_accuracy));
-				gscreen->removeNote(*this->_next_notes[0]);
+				sf::Vector2i		direction = it->getDirection();
+				sf::Time			delta_accuracy = sf::seconds(MAX_TIMING_VIEW + 1.f);
+
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && direction.y == -1)
+					delta_accuracy = this->_game_clock.getElapsedTime() - it->getTime();
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
+					delta_accuracy = this->_game_clock.getElapsedTime() - it->getTime();
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
+					delta_accuracy = this->_game_clock.getElapsedTime() - it->getTime();
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
+					delta_accuracy = this->_game_clock.getElapsedTime() - it->getTime();
+
+				if (delta_accuracy < sf::seconds(MAX_TIMING_VIEW + 1.f))
+				{
+					std::cout << "Delta accuracy : " << delta_accuracy.asMilliseconds() << std::endl;
+					gscreen->setSpriteAccuracy(this->getAccuracy(delta_accuracy));
+					gscreen->removeNote(*it);
+				}
 			}
 		}
 

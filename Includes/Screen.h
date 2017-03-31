@@ -76,6 +76,7 @@ public:
 	const std::vector<sf::VertexArray>&	getCross() const;
 	const std::vector<Note *>&			getNotes() const;
 	const std::vector<Note *>			getNextNotes(const sf::Time& time) const;
+	const std::vector<Note *>			getNotesWithSameTiming(const sf::Time& time) const;
 	const Note&							getNoteByIndex(unsigned int index) const;
 	const Skin&							getSkin() const;
 	const unsigned int					getSpeed() const;

@@ -166,6 +166,17 @@ const std::vector<Note *>	GameScreen::getNextNotes(const sf::Time& time) const
 	return (next_notes);
 }
 
+const std::vector<Note *>	GameScreen::getNotesWithSameTiming(const sf::Time& time) const
+{
+	std::vector<Note *>		same_timing;
+
+	for (auto it : this->_notes)
+		if (it->getTime() == time)
+			same_timing.push_back(it);
+
+	return (same_timing);
+}
+
 const Note&	GameScreen::getNoteByIndex(unsigned int index) const
 {
 	return (*this->_notes[index]);
@@ -315,13 +326,13 @@ void	GameScreen::restart()
 	this->_notes.push_back(new Note(sf::seconds(1.f), 0, sf::Vector2i(-1, 0),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(1.5f), 0, sf::Vector2i(1, 0),
+	this->_notes.push_back(new Note(sf::seconds(1.f), 0, sf::Vector2i(1, 0),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
 	this->_notes.push_back(new Note(sf::seconds(2.f), 0, sf::Vector2i(-1, 0),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(2.8f), 0, sf::Vector2i(0, 1),
+	this->_notes.push_back(new Note(sf::seconds(2.f), 0, sf::Vector2i(0, 1),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
 	this->_notes.push_back(new Note(sf::seconds(3.f), 0, sf::Vector2i(0, -1),
@@ -333,7 +344,7 @@ void	GameScreen::restart()
 	this->_notes.push_back(new Note(sf::seconds(4.f), 0, sf::Vector2i(1, 0),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(4.3f), 0, sf::Vector2i(0, 1),
+	this->_notes.push_back(new Note(sf::seconds(4.f), 0, sf::Vector2i(0, 1),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
 	this->_notes.push_back(new Note(sf::seconds(5.f), 0, sf::Vector2i(-1, 0),
@@ -345,7 +356,7 @@ void	GameScreen::restart()
 	this->_notes.push_back(new Note(sf::seconds(6.f), 0, sf::Vector2i(1, 0),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(7.2f), 0, sf::Vector2i(-1, 0),
+	this->_notes.push_back(new Note(sf::seconds(6.f), 0, sf::Vector2i(-1, 0),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
 	this->_sprite_accuracy = sf::Sprite();
