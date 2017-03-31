@@ -33,16 +33,16 @@ MenuScreen::MenuScreen(sf::RenderWindow& window) : IScreen(window, MENU)
 
 	sf::Vector2f	win_size(window.getSize());
 
-	this->_buttons.push_back(new Button(GAME_NAME, win_size.y / 4.f, sf::Vector2f(
+	this->_buttons.push_back(new Button(GAME_NAME, win_size.y / 4.f, this->_main_font, sf::Vector2f(
 		win_size.x / 2.f,
 		win_size.y / 20.f), CENTER));
-	this->_buttons.push_back(new Button("Play", win_size.y / 6.f, sf::Vector2f(
+	this->_buttons.push_back(new Button("Play", win_size.y / 6.f, this->_main_font, sf::Vector2f(
 		win_size.x / 2.f,
 		win_size.y / 2.5f), CENTER));
-	this->_buttons.push_back(new Button("Options", win_size.y / 6.f, sf::Vector2f(
+	this->_buttons.push_back(new Button("Options", win_size.y / 6.f, this->_main_font, sf::Vector2f(
 		win_size.x / 2.f,
 		win_size.y / 1.6f), CENTER));
-	this->_buttons.push_back(new Button("Exit", win_size.y / 12.f, sf::Vector2f(
+	this->_buttons.push_back(new Button("Exit", win_size.y / 12.f, this->_main_font, sf::Vector2f(
 		win_size.x / 2.f,
 		win_size.y / 1.15f), CENTER));
 	this->_buttons[1]->onClick(&IEvent::changeScreen, this->_events[1], GAME, static_cast<IScreen *>(this));
@@ -55,6 +55,7 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	std::cout << std::endl << "Creating game screen" << std::endl;
 	this->_events.push_back(new WindowDefaultEvent); // Event handler for options, close window, etc.
 	this->_events.push_back(new GameEvent); // Update game, draw it and react in terms of user inputs.
+	this->_window.setKeyRepeatEnabled(false);
 
 	sf::Vector2f		win_size(window.getSize());
 	sf::VertexArray		va_tmp(sf::LinesStrip, 2);
@@ -66,28 +67,14 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	va_tmp[0].position = sf::Vector2f(0, win_size.y / 2.f);
 	va_tmp[1].position = sf::Vector2f(win_size.x, win_size.y / 2.f);
 	this->_cross.push_back(va_tmp);
-	this->_speed = 1;
+	this->_speed = 10;
 	this->_skin = new Skin();
-	this->_notes.push_back(new Note(sf::seconds(1.f), 0, sf::Vector2i(-1, 0),
-		this->_skin->getComponent(eSkinComponent::SK_NOTE),
-		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(1.2f), 0, sf::Vector2i(1, 0),
-		this->_skin->getComponent(eSkinComponent::SK_NOTE),
-		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(1.3f), 0, sf::Vector2i(0, -1),
-		this->_skin->getComponent(eSkinComponent::SK_NOTE),
-		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(1.9f), 0, sf::Vector2i(0, 1),
-		this->_skin->getComponent(eSkinComponent::SK_NOTE),
-		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
-	this->_notes.push_back(new Note(sf::seconds(11.f), 0, sf::Vector2i(-1, 0),
-		this->_skin->getComponent(eSkinComponent::SK_NOTE),
-		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
 	this->_cursor.setTexture(this->_skin->getComponent(eSkinComponent::SK_CURSOR));
 	this->_cursor.setOrigin(sf::Vector2f(
 		this->_cursor.getGlobalBounds().width / 2.f,
 		this->_cursor.getGlobalBounds().height / 2.f));
 	this->_cursor.setPosition(sf::Vector2f(win_size.x / 2.f, win_size.y / 2.f));
+	this->restart();
 }
 
 IScreen::~IScreen()
@@ -199,6 +186,11 @@ const sf::Sprite&	GameScreen::getCursor() const
 	return (this->_cursor);
 }
 
+const sf::Sprite&	GameScreen::getSpriteAccuracy() const
+{
+	return (this->_sprite_accuracy);
+}
+
 
 //SETTERS
 void	IScreen::updateFPS()
@@ -237,6 +229,23 @@ void	GameScreen::removeNote(const Note& note)
 	std::cerr << "Note not found" << std::endl;
 }
 
+void	GameScreen::addSpeed(const int offset)
+{
+	std::cout << "Increasing speed to " << this->_speed + offset << std::endl;
+	this->_speed += offset;
+}
+
+void	GameScreen::setSpriteAccuracy(const eAccuracy accuracy)
+{
+	this->_sprite_accuracy.setTexture(this->_skin->getComponent((eSkinComponent)(accuracy + eSkinComponent::SK_MISS)));
+	this->_sprite_accuracy.setOrigin(sf::Vector2f(
+		this->_sprite_accuracy.getGlobalBounds().width / 2.f,
+		this->_sprite_accuracy.getGlobalBounds().height / 2.f));
+	this->_sprite_accuracy.setPosition(sf::Vector2f(
+		this->_window.getSize().x / 2.f,
+		this->_window.getSize().y / 2.f - this->_cursor.getGlobalBounds().height * 1.5f));
+}
+
 
 //METHODS
 int		IScreen::run()
@@ -248,34 +257,7 @@ int		IScreen::run()
 	{
 		for (auto it : this->_events)
 		{
-			// Don't repeat the main Update Event !
 			if ((status = it->update(*this, event)) != this->_index)
-				return (status);
-		}
-	}
-
-	this->_window.clear();
-	for (auto it : this->_events)
-		it->draw(*this);
-	this->_window.display();
-
-	this->updateFPS();
-	return (this->_index);
-}
-
-int		GameScreen::run()
-{
-	int				status;
-	sf::Event		event;
-
-	this->_events[1]->update(*this, sf::Event());
-
-	while (this->_window.pollEvent(event))
-	{
-		for (auto it : this->_events)
-		{
-			// Don't repeat the main Update Event !
-			if (it != this->_events[1] && (status = it->update(*this, event)) != this->_index)
 				return (status);
 		}
 	}
@@ -292,4 +274,79 @@ int		GameScreen::run()
 void	IScreen::draw(const sf::Drawable& object)
 {
 	this->_window.draw(object);
+}
+
+int		GameScreen::run()
+{
+	int				status;
+	sf::Event		event;
+	bool			user_input;
+
+	while (user_input = this->_window.pollEvent(event))
+	{
+		for (auto it : this->_events)
+		{
+			if ((status = it->update(*this, event)) != this->_index)
+				return (status);
+		}
+	}
+
+	// We need to update the window even if the user doesn't do anything.
+	// The game has to continue ;)
+	if (!user_input)
+		this->_events[1]->update(*this, sf::Event());
+
+	this->_window.clear();
+	for (auto it : this->_events)
+		it->draw(*this);
+	this->_window.display();
+
+	this->updateFPS();
+	return (this->_index);
+}
+
+void	GameScreen::restart()
+{
+	std::cout << "Restarting game" << std::endl;
+
+	if (this->_notes.size() > 0)
+		this->_notes.clear();
+
+	this->_notes.push_back(new Note(sf::seconds(1.f), 0, sf::Vector2i(-1, 0),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(1.5f), 0, sf::Vector2i(1, 0),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(2.f), 0, sf::Vector2i(-1, 0),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(2.8f), 0, sf::Vector2i(0, 1),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(3.f), 0, sf::Vector2i(0, -1),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(3.f), 0, sf::Vector2i(-1, 0),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(4.f), 0, sf::Vector2i(1, 0),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(4.3f), 0, sf::Vector2i(0, 1),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(5.f), 0, sf::Vector2i(-1, 0),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(5.f), 0, sf::Vector2i(0, 1),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(6.f), 0, sf::Vector2i(1, 0),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes.push_back(new Note(sf::seconds(7.2f), 0, sf::Vector2i(-1, 0),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE),
+		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_sprite_accuracy = sf::Sprite();
 }

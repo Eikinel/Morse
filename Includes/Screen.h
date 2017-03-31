@@ -2,6 +2,7 @@
 
 # include "Constants.h"
 
+enum eAccuracy;
 class IEvent;
 class Button;
 class Note;
@@ -79,12 +80,16 @@ public:
 	const Skin&							getSkin() const;
 	const unsigned int					getSpeed() const;
 	const sf::Sprite&					getCursor() const;
+	const sf::Sprite&					getSpriteAccuracy() const;
 
 	//SETTERS
 	void	removeNote(const Note& note);
+	void	addSpeed(const int offset);
+	void	setSpriteAccuracy(const eAccuracy accuracy);
 
 	//METHODS
 	virtual int		run();
+	void			restart();
 
 protected:
 	std::vector<Note *>				_notes; // Map file with all notes will be here
@@ -92,4 +97,5 @@ protected:
 	Skin*							_skin;
 	unsigned int					_speed;
 	sf::Sprite						_cursor;
+	sf::Sprite						_sprite_accuracy;
 };

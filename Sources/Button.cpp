@@ -8,7 +8,7 @@ Button::Button(const std::string& text, const size_t& size, const sf::Vector2f& 
 {
 	std::string	format[3] = { "LEFT", "CENTER", "RIGHT" };
 
-	std::cout << "Add button with text \"" << text << "\"." << std::endl;
+	std::cout << "Add button with text \"" << text << "\" and identation " << format[(int)indent] << "." <<std::endl;
 	this->_font.loadFromFile(path_to_font);
 	this->_text.setString(text);
 	this->_text.setFont(this->_font);
@@ -26,7 +26,9 @@ Button::Button(const std::string& text, const size_t& size, const sf::Vector2f& 
 Button::Button(const std::string& text, const size_t& size, const sf::Font& font,
 	const sf::Vector2f& pos, const eIndent& indent, const sf::Texture& texture)
 {
-	std::cout << "Add button with text \"" << text << "\"." << std::endl;
+	std::string	format[3] = { "LEFT", "CENTER", "RIGHT" };
+
+	std::cout << "Add button with text \"" << text << "\" and identation " << format[(int)indent] << "." << std::endl;
 	this->_font = font;
 	this->_text.setString(text);
 	this->_text.setFont(this->_font);

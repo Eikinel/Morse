@@ -11,7 +11,7 @@
 
 # define GAME_NAME	"Morse"
 
-# define MAX_SPEED			100.f
+# define MAX_SPEED			100
 # define MAX_TIMING_VIEW	10.f
 
 // Global variable for screens, containing menu, game, etc.

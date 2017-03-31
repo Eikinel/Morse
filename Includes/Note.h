@@ -3,6 +3,15 @@
 # include "Constants.h"
 # include "Entity.h"
 
+enum			eAccuracy
+{
+	ACC_MISS,
+	ACC_BAD,
+	ACC_GOOD,
+	ACC_GREAT,
+	ACC_SIZE
+};
+
 class			Note
 {
 public:

@@ -4,7 +4,10 @@
 Skin::Skin(std::string path)
 {
 	std::string		components[] =
-	{ "note.png", "note_outline.png", "cursor.png" };
+	{ 
+		"note.png", "note_outline.png", "cursor.png",
+		"miss.png", "bad.png", "good.png", "great.png"
+	};
 
 	if (path[path.size() - 1] != '/')
 		path += "/";
