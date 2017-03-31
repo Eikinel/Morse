@@ -31,10 +31,10 @@ GameEvent::GameEvent()
 
 	//Convert second to milliseconds for proper timing gaps, then apply calcul
 	float	max_timing_view_ms = MAX_TIMING_VIEW * 1000.f;
-	this->_timing_gaps.push_back(sf::Vector2f(-max_timing_view_ms / 400.f, max_timing_view_ms / 350.f)); //GREAT
-	this->_timing_gaps.push_back(sf::Vector2f(-max_timing_view_ms / 125.f, max_timing_view_ms / 100.f)); //GOOD
+	this->_timing_gaps.push_back(sf::Vector2f(-max_timing_view_ms / 300.f, max_timing_view_ms / 200.f)); //GREAT
+	this->_timing_gaps.push_back(sf::Vector2f(-max_timing_view_ms / 150.f, max_timing_view_ms / 100.f)); //GOOD
 	this->_timing_gaps.push_back(sf::Vector2f(-max_timing_view_ms / 75.f, max_timing_view_ms / 50.f)); //BAD
-	this->_timing_gaps.push_back(sf::Vector2f(-max_timing_view_ms / 40.f, max_timing_view_ms / 20.f)); //MISS
+	this->_timing_gaps.push_back(sf::Vector2f(-max_timing_view_ms / 37.5f, max_timing_view_ms / 25.f)); //MISS
 }
 
 
@@ -138,13 +138,13 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 				sf::Time			delta_accuracy = sf::seconds(this->_timing_gaps[this->_timing_gaps.size() - 1].y);
 				sf::Clock			delay;
 
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && direction.y == -1)
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::F) && direction.y == -1)
 					delta_accuracy = it->getTime() - this->_game_clock.getElapsedTime();
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == -1)
 					delta_accuracy = it->getTime() - this->_game_clock.getElapsedTime();
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::K) && direction.y == 1)
 					delta_accuracy = it->getTime() - this->_game_clock.getElapsedTime();
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::J) && direction.x == 1)
 					delta_accuracy = it->getTime() - this->_game_clock.getElapsedTime();
 
 				if (delta_accuracy >= sf::milliseconds(this->_timing_gaps[this->_timing_gaps.size() - 1].x) &&
@@ -152,8 +152,7 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 				{
 					eAccuracy	accuracy = this->getAccuracy(delta_accuracy - delay.getElapsedTime());
 
-					std::cout << "Delta accuracy : " << delta_accuracy.asMilliseconds() << std::endl;
-					std::cout << "Delta accuracy with delay : " << delta_accuracy.asMilliseconds() - delay.getElapsedTime().asMilliseconds() << std::endl;
+					std::cout << "Delta accuracy : " << delta_accuracy.asMilliseconds() - delay.getElapsedTime().asMilliseconds() << std::endl;
 					gscreen->removeNote(*it);
 					gscreen->setAccuracy(accuracy, this->_notes_played);
 				}
