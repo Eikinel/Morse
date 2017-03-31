@@ -1,7 +1,6 @@
 #include "Screen.h"
 #include "Event.h"
 #include "Button.h"
-#include "Note.h"
 #include "Skin.h"
 
 
@@ -60,7 +59,7 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	sf::Vector2f		win_size(window.getSize());
 	sf::VertexArray		va_tmp(sf::LinesStrip, 2);
 
-	va_tmp[0].color = va_tmp[1].color = sf::Color::Green;
+	va_tmp[0].color = va_tmp[1].color = sf::Color::Cyan;
 	va_tmp[0].position = sf::Vector2f(win_size.x / 2.f, 0);
 	va_tmp[1].position = sf::Vector2f(win_size.x / 2.f, win_size.y);
 	this->_cross.push_back(va_tmp);
@@ -68,6 +67,10 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	va_tmp[1].position = sf::Vector2f(win_size.x, win_size.y / 2.f);
 	this->_cross.push_back(va_tmp);
 	this->_speed = 10;
+	this->_accuracy_ratio[eAccuracy::ACC_MISS] = 0.f;
+	this->_accuracy_ratio[eAccuracy::ACC_BAD] = 0.33f;
+	this->_accuracy_ratio[eAccuracy::ACC_GOOD] = 0.66f;
+	this->_accuracy_ratio[eAccuracy::ACC_GREAT] = 1.f;
 	this->_skin = new Skin();
 	this->_cursor.setTexture(this->_skin->getComponent(eSkinComponent::SK_CURSOR));
 	this->_cursor.setOrigin(sf::Vector2f(
@@ -134,17 +137,17 @@ const unsigned int	IScreen::getFrameLimiter() const
 	return (this->_frame_limiter);
 }
 
+const sf::Font&	IScreen::getMainFont() const
+{
+	return (this->_main_font);
+}
+
 
 std::vector<Button *>&	MenuScreen::getButtons()
 {
 	return (this->_buttons);
 }
 
-
-const std::vector<sf::VertexArray>&	GameScreen::getCross() const
-{
-	return (this->_cross);
-}
 
 const std::vector<Note *>&	GameScreen::getNotes() const
 {
@@ -182,14 +185,29 @@ const Note&	GameScreen::getNoteByIndex(unsigned int index) const
 	return (*this->_notes[index]);
 }
 
-const Skin&	GameScreen::getSkin() const
+const unsigned int	GameScreen::getNotesSize() const
 {
-	return (*this->_skin);
+	return (this->_notes_size);
+}
+
+const std::vector<sf::VertexArray>&	GameScreen::getCross() const
+{
+	return (this->_cross);
 }
 
 const unsigned int	GameScreen::getSpeed() const
 {
 	return (this->_speed);
+}
+
+const float	GameScreen::getUserAccuracy() const
+{
+	return (this->_user_accuracy);
+}
+
+const Skin&	GameScreen::getSkin() const
+{
+	return (*this->_skin);
 }
 
 const sf::Sprite&	GameScreen::getCursor() const
@@ -255,6 +273,22 @@ void	GameScreen::setSpriteAccuracy(const eAccuracy accuracy)
 	this->_sprite_accuracy.setPosition(sf::Vector2f(
 		this->_window.getSize().x / 2.f,
 		this->_window.getSize().y / 2.f - this->_cursor.getGlobalBounds().height * 1.5f));
+}
+
+void	GameScreen::setUserAccuracy(const eAccuracy accuracy, std::vector<eAccuracy>& notes_played)
+{
+	this->_current_accuracy += this->_accuracy_ratio[notes_played[notes_played.size() - 1]];
+	this->_user_accuracy = (this->_current_accuracy / notes_played.size()) * 100.f;
+}
+
+void	GameScreen::setAccuracy(const eAccuracy accuracy, std::vector<eAccuracy>& notes_played)
+{
+	notes_played.push_back(accuracy);
+	for (auto it : notes_played)
+		std::cout << it << std::endl;
+	std::cout << std::endl;
+	this->setSpriteAccuracy(accuracy);
+	this->setUserAccuracy(accuracy, notes_played);
 }
 
 
@@ -323,6 +357,8 @@ void	GameScreen::restart()
 	if (this->_notes.size() > 0)
 		this->_notes.clear();
 
+	this->_user_accuracy = 100.f;
+	this->_current_accuracy = 0.f;
 	this->_notes.push_back(new Note(sf::seconds(1.f), 0, sf::Vector2i(-1, 0),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
@@ -359,5 +395,6 @@ void	GameScreen::restart()
 	this->_notes.push_back(new Note(sf::seconds(6.f), 0, sf::Vector2i(-1, 0),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE),
 		this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE)));
+	this->_notes_size = this->_notes.size();
 	this->_sprite_accuracy = sf::Sprite();
 }

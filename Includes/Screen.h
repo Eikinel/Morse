@@ -1,8 +1,8 @@
 #pragma once
 
 # include "Constants.h"
+# include "Note.h"
 
-enum eAccuracy;
 class IEvent;
 class Button;
 class Note;
@@ -30,6 +30,7 @@ public:
 	virtual const float				getFPS() const;
 	virtual const sf::Text&			getFPSText() const;
 	virtual const unsigned int		getFrameLimiter() const;
+	virtual const sf::Font&			getMainFont() const;
 
 	//SETTERS
 	virtual void	updateFPS();
@@ -49,8 +50,8 @@ protected:
 	sf::Clock		_clock;
 	float			_fps;
 	unsigned int	_frame_limiter;
-	sf::Font		_main_font;
 	sf::Text		_fps_text;
+	sf::Font		_main_font;
 };
 
 class				MenuScreen : public IScreen
@@ -73,13 +74,15 @@ public:
 	virtual ~GameScreen();
 
 	//GETTERS
-	const std::vector<sf::VertexArray>&	getCross() const;
 	const std::vector<Note *>&			getNotes() const;
 	const std::vector<Note *>			getNextNotes(const sf::Time& time) const;
 	const std::vector<Note *>			getNotesWithSameTiming(const sf::Time& time) const;
 	const Note&							getNoteByIndex(unsigned int index) const;
-	const Skin&							getSkin() const;
+	const unsigned int					getNotesSize() const;
+	const std::vector<sf::VertexArray>&	getCross() const;
 	const unsigned int					getSpeed() const;
+	const float							getUserAccuracy() const;
+	const Skin&							getSkin() const;
 	const sf::Sprite&					getCursor() const;
 	const sf::Sprite&					getSpriteAccuracy() const;
 
@@ -87,6 +90,8 @@ public:
 	void	removeNote(const Note& note);
 	void	addSpeed(const int offset);
 	void	setSpriteAccuracy(const eAccuracy accuracy);
+	void	setUserAccuracy(const eAccuracy accuracy, std::vector<eAccuracy>& notes_played);
+	void	setAccuracy(const eAccuracy accuracy, std::vector<eAccuracy>& notes_played);
 
 	//METHODS
 	virtual int		run();
@@ -94,9 +99,13 @@ public:
 
 protected:
 	std::vector<Note *>				_notes; // Map file with all notes will be here
+	unsigned int					_notes_size;
 	std::vector<sf::VertexArray>	_cross;
-	Skin*							_skin;
 	unsigned int					_speed;
+	float							_user_accuracy;
+	float							_current_accuracy;
+	float							_accuracy_ratio[eAccuracy::ACC_SIZE];
+	Skin*							_skin;
 	sf::Sprite						_cursor;
 	sf::Sprite						_sprite_accuracy;
 };

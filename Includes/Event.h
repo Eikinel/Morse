@@ -87,4 +87,5 @@ private:
 	sf::Clock					_game_clock;
 	std::vector<Note *>			_next_notes;
 	std::vector<sf::Vector2f>	_timing_gaps;
+	std::vector<eAccuracy>		_notes_played;
 };
