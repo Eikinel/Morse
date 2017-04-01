@@ -66,10 +66,10 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	va_tmp[0].position = sf::Vector2f(0, win_size.y / 2.f);
 	va_tmp[1].position = sf::Vector2f(win_size.x, win_size.y / 2.f);
 	this->_cross.push_back(va_tmp);
-	this->_speed = 10;
+	this->_speed = 20;
 	this->_accuracy_ratio[eAccuracy::ACC_MISS] = 0.f;
-	this->_accuracy_ratio[eAccuracy::ACC_BAD] = 0.33f;
-	this->_accuracy_ratio[eAccuracy::ACC_GOOD] = 0.66f;
+	this->_accuracy_ratio[eAccuracy::ACC_BAD] = 0.3334f;
+	this->_accuracy_ratio[eAccuracy::ACC_GOOD] = 0.6667f;
 	this->_accuracy_ratio[eAccuracy::ACC_GREAT] = 1.f;
 	this->_skin = new Skin();
 	this->_cursor.setTexture(this->_skin->getComponent(eSkinComponent::SK_CURSOR));
@@ -260,8 +260,13 @@ void	GameScreen::removeNote(const Note& note)
 
 void	GameScreen::addSpeed(const int offset)
 {
-	std::cout << "Increasing speed to " << this->_speed + offset << std::endl;
-	this->_speed += offset;
+	if (this->_speed + offset > 0 && this->_speed < MAX_SPEED)
+	{
+		std::cout << "Changing speed to " << this->_speed + offset << std::endl;
+		this->_speed += offset;
+	}
+	else
+		std::cerr << "Can't change speed : floor or ceiling reached" << std::endl;
 }
 
 void	GameScreen::setSpriteAccuracy(const eAccuracy accuracy)
@@ -284,9 +289,6 @@ void	GameScreen::setUserAccuracy(const eAccuracy accuracy, std::vector<eAccuracy
 void	GameScreen::setAccuracy(const eAccuracy accuracy, std::vector<eAccuracy>& notes_played)
 {
 	notes_played.push_back(accuracy);
-	for (auto it : notes_played)
-		std::cout << it << std::endl;
-	std::cout << std::endl;
 	this->setSpriteAccuracy(accuracy);
 	this->setUserAccuracy(accuracy, notes_played);
 }
@@ -352,48 +354,31 @@ int		GameScreen::run()
 
 void	GameScreen::restart()
 {
-	const sf::Texture*	sk_note = &this->_skin->getComponent(eSkinComponent::SK_NOTE);
-	const sf::Texture*	sk_note_outline = &this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE);
+	std::vector<const sf::Texture *>	textures;
+
+	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_NOTE));
+	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE));
+	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN_BEGIN));
+	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN_OUTLINE_BEGIN));
+	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN));
+	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN_OUTLINE));
+	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN_END));
+	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN_OUTLINE_END));
 
 	std::cout << "Restarting game" << std::endl;
 
-	if (this->_notes.size() > 0)
-		this->_notes.clear();
+	for (auto it = this->_notes.begin(); it != this->_notes.end();)
+	{
+		delete(*it);
+		it = this->_notes.erase(it);
+	}
 
 	this->_user_accuracy = 100.f;
 	this->_current_accuracy = 0.f;
-	this->_notes.push_back(new Note(sf::seconds(1.f), 0, sf::Vector2i(-1, 0),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(1.1f), 0, sf::Vector2i(0, -1),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(1.2f), 0, sf::Vector2i(1, 0),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(1.3f), 0, sf::Vector2i(0, 1),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(1.4f), 0, sf::Vector2i(-1, 0),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(1.5f), 0, sf::Vector2i(0, -1),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(1.6f), 0, sf::Vector2i(1, 0),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(1.7f), 0, sf::Vector2i(0, 1),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(1.8f), 0, sf::Vector2i(-1, 0),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(1.9f), 0, sf::Vector2i(0, -1),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(2.f), 0, sf::Vector2i(1, 0),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(2.1f), 0, sf::Vector2i(0, 1),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(2.2f), 0, sf::Vector2i(-1, 0),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(2.3f), 0, sf::Vector2i(0, -1),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(2.4f), 0, sf::Vector2i(1, 0),
-		*sk_note, *sk_note_outline));
-	this->_notes.push_back(new Note(sf::seconds(2.5f), 0, sf::Vector2i(0, 1),
-		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(1), 0.5f, sf::Vector2i(0, 1), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(2), 0.f, sf::Vector2i(0, 1), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(3), 0.5f, sf::Vector2i(0, -1), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(4), 0.f, sf::Vector2i(0, -1), textures, this->_speed));
 	this->_notes_size = this->_notes.size();
 	this->_sprite_accuracy = sf::Sprite();
 }

@@ -4,7 +4,8 @@
 #include "Collider.h"
 #include "Skin.h"
 #include "Note.h"
-
+#include <iomanip>
+#include <sstream>
 
 //CONSTRUCTORS
 IEvent::IEvent()
@@ -31,10 +32,10 @@ GameEvent::GameEvent()
 
 	//Convert second to milliseconds for proper timing gaps, then apply calcul
 	float	max_timing_view_ms = MAX_TIMING_VIEW * 1000.f;
-	this->_timing_gaps.push_back(sf::Vector2f(-max_timing_view_ms / 300.f, max_timing_view_ms / 200.f)); //GREAT
-	this->_timing_gaps.push_back(sf::Vector2f(-max_timing_view_ms / 150.f, max_timing_view_ms / 100.f)); //GOOD
-	this->_timing_gaps.push_back(sf::Vector2f(-max_timing_view_ms / 75.f, max_timing_view_ms / 50.f)); //BAD
-	this->_timing_gaps.push_back(sf::Vector2f(-max_timing_view_ms / 37.5f, max_timing_view_ms / 25.f)); //MISS
+	this->_timing_gaps.push_back(sf::Vector2f(std::roundf(-max_timing_view_ms / 400.f), std::roundf(max_timing_view_ms / 400.f))); //GREAT
+	this->_timing_gaps.push_back(sf::Vector2f(std::roundf(-max_timing_view_ms / 133.4f), std::roundf(max_timing_view_ms / 133.4f))); //GOOD
+	this->_timing_gaps.push_back(sf::Vector2f(std::roundf(-max_timing_view_ms / 100.f), std::roundf(max_timing_view_ms / 100.f))); //BAD
+	this->_timing_gaps.push_back(sf::Vector2f(std::roundf(-max_timing_view_ms / 66.7f), std::roundf(max_timing_view_ms / 66.7f))); //MISS
 }
 
 
@@ -102,29 +103,45 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 
-	if ((this->_next_notes = gscreen->getNextNotes(this->_game_clock.getElapsedTime())).size() > 0)
-	{
-		for (auto it : this->_next_notes)
-		{
-			for (auto it2 : it->getSprites())
-				it2->setPosition(sf::Vector2f(
-					gscreen->getCursor().getPosition().x + ((it->getTime().asSeconds() - this->_game_clock.getElapsedTime().asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * it->getDirection().x,
-					gscreen->getCursor().getPosition().y + ((it->getTime().asSeconds() - this->_game_clock.getElapsedTime().asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().y / (2.f * MAX_TIMING_VIEW))) * it->getDirection().y));
-		}
+	//Retrieve next notes;
+	this->_next_notes = gscreen->getNextNotes(this->_game_clock.getElapsedTime());
 
-		for (auto it = this->_next_notes.begin(); it != this->_next_notes.end();)
+	//Give notes a position
+	for (auto it : this->_next_notes)
+	{
+		const std::vector<sf::Sprite *>	tmp = it->getSprites();
+
+		tmp[0]->setPosition(sf::Vector2f(
+				gscreen->getCursor().getPosition().x + ((it->getTime().asSeconds() - this->_game_clock.getElapsedTime().asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * it->getDirection().x,
+				gscreen->getCursor().getPosition().y + ((it->getTime().asSeconds() - this->_game_clock.getElapsedTime().asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().y / (2.f * MAX_TIMING_VIEW))) * it->getDirection().y));
+		tmp[1]->setPosition(tmp[0]->getPosition());
+
+		if (it->getDuration() > 0.f)
 		{
-			if ((*it)->getTime().asMilliseconds() - this->_game_clock.getElapsedTime().asMilliseconds() < this->_timing_gaps[this->_timing_gaps.size() - 1].x)
+			if (it->isHeld())
 			{
-				gscreen->removeNote(**it);
-				gscreen->setAccuracy(eAccuracy::ACC_MISS, this->_notes_played);
-				it = this->_next_notes.erase(it);
+				it->scaleDuration(this->_game_clock.getElapsedTime());
+				it->scaleLongNote(gscreen->getSpeed());
 			}
-			else
-				++it;
+
+			tmp[2]->setPosition(sf::Vector2f(
+				tmp[0]->getPosition().x + (tmp[0]->getGlobalBounds().width / 2.f * it->getDirection().x),
+				tmp[0]->getPosition().y + (tmp[0]->getGlobalBounds().height / 2.f * it->getDirection().y)));
+			tmp[3]->setPosition(tmp[2]->getPosition());
+
+			tmp[4]->setPosition(sf::Vector2f(
+				tmp[2]->getPosition().x + (tmp[2]->getGlobalBounds().width / 2.f + tmp[4]->getGlobalBounds().width / 2.f) * it->getDirection().x,
+				tmp[2]->getPosition().y + (tmp[2]->getGlobalBounds().height / 2.f + tmp[4]->getGlobalBounds().height / 2.f) * it->getDirection().y));
+			tmp[5]->setPosition(tmp[4]->getPosition());
+
+			tmp[6]->setPosition(sf::Vector2f(
+				tmp[4]->getPosition().x + (tmp[4]->getGlobalBounds().width / 2.f + tmp[6]->getGlobalBounds().width / 2.f) * it->getDirection().x,
+				tmp[4]->getPosition().y + (tmp[4]->getGlobalBounds().height / 2.f + tmp[6]->getGlobalBounds().height / 2.f) * it->getDirection().y));
+			tmp[7]->setPosition(tmp[6]->getPosition());
 		}
 	}
 
+	//Check user action
 	switch (event.type)
 	{
 	case sf::Event::KeyPressed:
@@ -134,27 +151,34 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 
 			for (auto it : same_timing)
 			{
-				sf::Vector2i		direction = it->getDirection();
-				sf::Time			delta_accuracy = sf::seconds(this->_timing_gaps[this->_timing_gaps.size() - 1].y);
-				sf::Clock			delay;
+				sf::Vector2i	direction = it->getDirection();
+				sf::Time		note_time = it->getTime();
+				sf::Time		delta_accuracy = sf::seconds(this->_timing_gaps[this->_timing_gaps.size() - 1].y);
+				sf::Clock		delay;
 
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::F) && direction.y == -1)
-					delta_accuracy = it->getTime() - this->_game_clock.getElapsedTime();
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == -1)
-					delta_accuracy = it->getTime() - this->_game_clock.getElapsedTime();
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::K) && direction.y == 1)
-					delta_accuracy = it->getTime() - this->_game_clock.getElapsedTime();
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::J) && direction.x == 1)
-					delta_accuracy = it->getTime() - this->_game_clock.getElapsedTime();
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && direction.y == -1)
+					delta_accuracy = note_time - this->_game_clock.getElapsedTime();
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
+					delta_accuracy = note_time - this->_game_clock.getElapsedTime();
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
+					delta_accuracy = note_time - this->_game_clock.getElapsedTime();
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
+					delta_accuracy = note_time - this->_game_clock.getElapsedTime();
 
-				if (delta_accuracy >= sf::milliseconds(this->_timing_gaps[this->_timing_gaps.size() - 1].x) &&
-					delta_accuracy <= sf::milliseconds(this->_timing_gaps[this->_timing_gaps.size() - 1].y))
+				if (delta_accuracy > sf::milliseconds(this->_timing_gaps[this->_timing_gaps.size() - 1].x) &&
+					delta_accuracy < sf::milliseconds(this->_timing_gaps[this->_timing_gaps.size() - 1].y))
 				{
 					eAccuracy	accuracy = this->getAccuracy(delta_accuracy - delay.getElapsedTime());
 
 					std::cout << "Delta accuracy : " << delta_accuracy.asMilliseconds() - delay.getElapsedTime().asMilliseconds() << std::endl;
-					gscreen->removeNote(*it);
-					gscreen->setAccuracy(accuracy, this->_notes_played);
+					
+					if (it->getDuration() == 0.f)
+					{
+						gscreen->removeNote(*it);
+						gscreen->setAccuracy(accuracy, this->_notes_played);
+					}
+					else
+						it->setHeld(true);
 				}
 			}
 		}
@@ -162,10 +186,22 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || sf::Keyboard::isKeyPressed(sf::Keyboard::RControl))
 		{
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::F3))
+			{
 				gscreen->addSpeed(-1);
-			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F4))
+				for (auto it : this->_next_notes)
+					if (it->getDuration() > 0.f)
+						it->scaleLongNote(gscreen->getSpeed());
+			}
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::F4))
+			{
 				gscreen->addSpeed(1);
-			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+				for (auto it : this->_next_notes)
+					if (it->getDuration() > 0.f)
+						it->scaleLongNote(gscreen->getSpeed());
+			}
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
 			{
 				gscreen->restart();
 				this->_notes_played.clear();
@@ -176,6 +212,46 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 			return (this->changeScreen(eGamestate::MENU, gscreen));
 
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
+			std::cout << "T1 : " << this->_game_clock.getElapsedTime().asSeconds() << std::endl;
+
+		break;
+	case sf::Event::KeyReleased:
+		for (auto it : this->_next_notes)
+		{
+			if (it->getDuration() >= 0.f && it->isHeld())
+			{
+				sf::Vector2i	direction = it->getDirection();
+				sf::Time		note_length = sf::seconds(it->getLength());
+				sf::Time		delta_accuracy = sf::seconds(this->_timing_gaps[this->_timing_gaps.size() - 1].y);
+				sf::Clock		delay;
+				eAccuracy		accuracy;
+
+				it->setHeld(false);
+				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && direction.y == -1)
+					delta_accuracy = note_length - this->_game_clock.getElapsedTime();
+				else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
+					delta_accuracy = note_length - this->_game_clock.getElapsedTime();
+				else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
+					delta_accuracy = note_length - this->_game_clock.getElapsedTime();
+				else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
+					delta_accuracy = note_length - this->_game_clock.getElapsedTime();
+
+				std::cout << "Delta accuracy released : " << delta_accuracy.asMilliseconds() - delay.getElapsedTime().asMilliseconds() << std::endl;
+
+				if (!it->hasBeenHeld())
+				{
+					if ((accuracy = this->getAccuracy(delta_accuracy - delay.getElapsedTime())) == eAccuracy::ACC_MISS)
+						accuracy = eAccuracy::ACC_BAD;
+					gscreen->setAccuracy(accuracy, this->_notes_played);
+					it->setBeenHeld(true);
+				}
+			}
+		}
+
+		if (!sf::Keyboard::isKeyPressed(sf::Keyboard::T))
+			std::cout << "T2 : " << this->_game_clock.getElapsedTime().asSeconds() << std::endl;
+
 		break;
 	case sf::Event::MouseButtonReleased:
 		std::cout << "GameEvent : Click !" << std::endl;
@@ -183,6 +259,32 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 		break;
 	default:
 		break;
+	}
+
+	//If the note hit the death bar and hasn't been played, delete it (for short note) or short it (for long note)
+	for (auto it = this->_next_notes.begin(); it != this->_next_notes.end();)
+	{
+		if ((*it)->getTime().asMilliseconds() - this->_game_clock.getElapsedTime().asMilliseconds() < this->_timing_gaps[this->_timing_gaps.size() - 1].x)
+		{
+			if ((*it)->getDuration() == 0.f)
+			{
+				if (!(*it)->hasBeenHeld())
+					gscreen->setAccuracy(eAccuracy::ACC_MISS, this->_notes_played);
+				gscreen->removeNote(**it);
+				it = this->_next_notes.erase(it);
+			}
+
+			else if (!(*it)->isHeld())
+			{
+				(*it)->scaleDuration(this->_game_clock.getElapsedTime());
+				(*it)->scaleLongNote(gscreen->getSpeed());
+				++it;
+			}
+			else
+				++it;
+		}
+		else
+			++it;
 	}
 
 	return (screen.getIndex());
@@ -201,7 +303,7 @@ void		GameEvent::draw(IScreen& screen)
 		for (auto it2 : it->getSprites())
 			gscreen->draw(*it2);
 	gscreen->draw(gscreen->getSpriteAccuracy());
-	gscreen->draw(sf::Text(std::to_string(gscreen->getUserAccuracy()) + " %", gscreen->getMainFont()));
+	gscreen->draw(sf::Text(setPrecision(gscreen->getUserAccuracy(), 2) + " %", gscreen->getMainFont()));
 }
 
 
@@ -226,7 +328,7 @@ const eAccuracy	GameEvent::getAccuracy(const sf::Time& delta) const
 			return ((eAccuracy)accuracy);
 		accuracy--;
 	}
-	return ((eAccuracy)accuracy);
+	return (eAccuracy::ACC_MISS);
 }
 
 
@@ -237,7 +339,7 @@ void	IEvent::setToggleOptions(const std::vector<bool>& toggle_options)
 }
 
 
-//OTHER METHODS
+//METHODS
 int	IEvent::changeScreen(eGamestate gamestate, IScreen* screen)
 {
 	std::string	type[3] = { "menu", "options", "game" };
@@ -292,4 +394,15 @@ int		IEvent::toggleBoundingBoxes(int index)
 	else
 		std::cout << "Hiding bounding boxes" << std::endl;
 	return (index);
+}
+
+
+//MISCELLANEOUS
+std::string	setPrecision(float value, unsigned int precision)
+{
+	std::ostringstream	oss;
+
+	oss << std::fixed << std::setfill('0') << std::setprecision(precision) << value;
+
+	return (oss.str());
 }

@@ -1,0 +1,32 @@
+this->_notes.push_back(new Note(sf::seconds(1.f), 0, sf::Vector2i(-1, 0),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(1.1f), 0, sf::Vector2i(0, -1),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(1.2f), 0, sf::Vector2i(1, 0),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(1.3f), 0, sf::Vector2i(0, 1),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(1.4f), 0, sf::Vector2i(-1, 0),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(1.5f), 0, sf::Vector2i(0, -1),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(1.6f), 0, sf::Vector2i(1, 0),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(1.7f), 0, sf::Vector2i(0, 1),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(1.8f), 0, sf::Vector2i(-1, 0),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(1.9f), 0, sf::Vector2i(0, -1),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(2.f), 0, sf::Vector2i(1, 0),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(2.1f), 0, sf::Vector2i(0, 1),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(2.2f), 0, sf::Vector2i(-1, 0),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(2.3f), 0, sf::Vector2i(0, -1),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(2.4f), 0, sf::Vector2i(1, 0),
+		*sk_note, *sk_note_outline));
+	this->_notes.push_back(new Note(sf::seconds(2.5f), 0, sf::Vector2i(0, 1),
+		*sk_note, *sk_note_outline));

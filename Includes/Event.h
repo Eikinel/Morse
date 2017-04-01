@@ -80,12 +80,17 @@ public:
 	virtual int		update(IScreen& screen, sf::Event& event);
 	virtual void	draw(IScreen& screen);
 
-	//GETTERS
-	const eAccuracy		getAccuracy(const sf::Time& delta) const;
-
 private:
 	sf::Clock					_game_clock;
 	std::vector<Note *>			_next_notes;
 	std::vector<sf::Vector2f>	_timing_gaps;
 	std::vector<eAccuracy>		_notes_played;
+
+	//GETTERS
+	const eAccuracy		getAccuracy(const sf::Time& delta) const;
+
+	//METHODS
+	void	shortenNote(const Note& note);
 };
+
+std::string	setPrecision(float value, unsigned int precision);

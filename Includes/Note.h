@@ -16,14 +16,24 @@ class			Note
 {
 public:
 	Note(const sf::Time& time, const float duration, const sf::Vector2i& direction,
-		const sf::Texture& t_note, const sf::Texture& t_note_outline);
+		const std::vector<const sf::Texture *>& textures, const unsigned int& speed);
 	virtual ~Note();
 
 	//GETTERS
 	const sf::Time&						getTime() const;
 	const float							getDuration() const;
+	const float							getLength() const;
 	const sf::Vector2i&					getDirection() const;
 	const std::vector<sf::Sprite *>&	getSprites() const;
+	const bool							isHeld() const;
+	const bool							hasBeenHeld() const;
+
+	//SETTERS
+	void	setDuration(float duration);
+	void	scaleDuration(const sf::Time& offset);
+	void	scaleLongNote(const unsigned int& speed);
+	void	setHeld(const bool held);
+	void	setBeenHeld(const bool been_held);
 
 	//OPERATOR
 	bool	operator==(const Note& note);
@@ -33,4 +43,9 @@ protected:
 	float						_duration; // 0.f = short note
 	sf::Vector2i				_direction;
 	std::vector<sf::Sprite *>	_sprites;
+
+	//For long note only
+	float						_length; // to perform scaling operations
+	bool						_is_held; // currently played ?
+	bool						_has_been_held; // don't count the note two times or more !
 };

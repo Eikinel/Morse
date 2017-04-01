@@ -34,3 +34,6 @@
 
 # Not-to-push directories
 Canvas/
+
+# WTF GitHub ? HTML ?
+.html
