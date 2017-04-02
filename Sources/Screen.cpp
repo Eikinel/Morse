@@ -66,7 +66,7 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	va_tmp[0].position = sf::Vector2f(0, win_size.y / 2.f);
 	va_tmp[1].position = sf::Vector2f(win_size.x, win_size.y / 2.f);
 	this->_cross.push_back(va_tmp);
-	this->_speed = 20;
+	this->_speed = 10;
 	this->_accuracy_ratio[eAccuracy::ACC_MISS] = 0.f;
 	this->_accuracy_ratio[eAccuracy::ACC_BAD] = 0.3334f;
 	this->_accuracy_ratio[eAccuracy::ACC_GOOD] = 0.6667f;
@@ -169,12 +169,12 @@ const std::vector<Note *>	GameScreen::getNextNotes(const sf::Time& time) const
 	return (next_notes);
 }
 
-const std::vector<Note *>	GameScreen::getNotesWithSameTiming(const sf::Time& time) const
+const std::vector<Note *>	GameScreen::getNotesWithSameTiming(const sf::Time& time, const float& length) const
 {
 	std::vector<Note *>		same_timing;
 
 	for (auto it : this->_notes)
-		if (it->getTime() == time)
+		if (it->getTime().asSeconds() >= time.asSeconds() && it->getTime().asSeconds() <= length)
 			same_timing.push_back(it);
 
 	return (same_timing);
@@ -375,10 +375,20 @@ void	GameScreen::restart()
 
 	this->_user_accuracy = 100.f;
 	this->_current_accuracy = 0.f;
-	this->_notes.push_back(new Note(sf::seconds(1), 0.5f, sf::Vector2i(0, 1), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(2), 0.f, sf::Vector2i(0, 1), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(3), 0.5f, sf::Vector2i(0, -1), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(4), 0.f, sf::Vector2i(0, -1), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(1.5), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(2.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(2.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(3.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(3.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(4.f), 10.f, sf::Vector2i(0, -1), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(4.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(4.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(5.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(5.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(6.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(6.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(7.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(7.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
 	this->_notes_size = this->_notes.size();
 	this->_sprite_accuracy = sf::Sprite();
 }

@@ -1,9 +1,10 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (RhythmGame.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  Screen.cpp
-h:\documents\projets\morse\sources\screen.cpp(19): warning C4244: 'argument' : conversion de 'float' en 'unsigned int', perte possible de données
-h:\documents\projets\morse\sources\screen.cpp(37): warning C4244: 'argument' : conversion de 'float' en 'const std::size_t', perte possible de données
-h:\documents\projets\morse\sources\screen.cpp(40): warning C4244: 'argument' : conversion de 'float' en 'const std::size_t', perte possible de données
-h:\documents\projets\morse\sources\screen.cpp(43): warning C4244: 'argument' : conversion de 'float' en 'const std::size_t', perte possible de données
-h:\documents\projets\morse\sources\screen.cpp(46): warning C4244: 'argument' : conversion de 'float' en 'const std::size_t', perte possible de données
+  Note.cpp
+  Event.cpp
+h:\documents\projets\morse\includes\collider.h(61): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+h:\documents\projets\morse\sources\event.cpp(81): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+h:\documents\projets\morse\sources\event.cpp(168): warning C4244: 'argument' : conversion de 'float' en 'sf::Int32', perte possible de données
+h:\documents\projets\morse\sources\event.cpp(169): warning C4244: 'argument' : conversion de 'float' en 'sf::Int32', perte possible de données
+  Génération de code en cours...
   RhythmGame.vcxproj -> H:\Documents\Projets\Morse\Debug\Morse.exe
   RhythmGame.vcxproj -> H:\Documents\Projets\Morse\Debug\Morse.pdb (Full PDB)

@@ -41,11 +41,14 @@ Note::Note(const sf::Time& time, const float duration, const sf::Vector2i& direc
 		}
 	}
 	else
+	{
 		std::cerr << "Error while setting note. Values are { " <<
-		"time : " << time.asSeconds() << ", " <<
-		"duration : " << duration << ", " <<
-		"direction : [" << direction.x << " ; " << direction.y << "]" <<
-		" }." << std::endl;
+			"time : " << time.asSeconds() << ", " <<
+			"duration : " << duration << ", " <<
+			"direction : [" << direction.x << " ; " << direction.y << "]" <<
+			" }." << std::endl;
+		delete (this);
+	}
 }
 
 Note::~Note()
@@ -108,7 +111,7 @@ void	Note::scaleDuration(const sf::Time& offset)
 
 void	Note::scaleLongNote(const unsigned int& speed)
 {
-	this->_sprites[4]->setScale(sf::Vector2f(this->_duration * speed * (std::abs(this->_direction.x) == 1 ? 2 : 1), 1));
+	this->_sprites[4]->setScale(sf::Vector2f(this->_duration * speed, 1));
 	this->_sprites[5]->setScale(this->_sprites[4]->getScale());
 }
 

@@ -147,7 +147,7 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 	case sf::Event::KeyPressed:
 		if (this->_next_notes.size() > 0)
 		{
-			std::vector<Note *>	same_timing = gscreen->getNotesWithSameTiming(this->_next_notes[0]->getTime());
+			std::vector<Note *>	same_timing = gscreen->getNotesWithSameTiming(this->_next_notes[0]->getTime(), this->_next_notes[0]->getLength());
 
 			for (auto it : same_timing)
 			{
@@ -158,11 +158,11 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && direction.y == -1)
 					delta_accuracy = note_time - this->_game_clock.getElapsedTime();
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
 					delta_accuracy = note_time - this->_game_clock.getElapsedTime();
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
 					delta_accuracy = note_time - this->_game_clock.getElapsedTime();
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
 					delta_accuracy = note_time - this->_game_clock.getElapsedTime();
 
 				if (delta_accuracy > sf::milliseconds(this->_timing_gaps[this->_timing_gaps.size() - 1].x) &&
@@ -227,30 +227,30 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 				sf::Clock		delay;
 				eAccuracy		accuracy;
 
-				it->setHeld(false);
 				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && direction.y == -1)
 					delta_accuracy = note_length - this->_game_clock.getElapsedTime();
-				else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
+				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
 					delta_accuracy = note_length - this->_game_clock.getElapsedTime();
-				else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
+				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
 					delta_accuracy = note_length - this->_game_clock.getElapsedTime();
-				else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
+				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
 					delta_accuracy = note_length - this->_game_clock.getElapsedTime();
 
 				std::cout << "Delta accuracy released : " << delta_accuracy.asMilliseconds() - delay.getElapsedTime().asMilliseconds() << std::endl;
 
-				if (!it->hasBeenHeld())
+				if (delta_accuracy < sf::seconds(this->_timing_gaps[this->_timing_gaps.size() - 1].y))
 				{
-					if ((accuracy = this->getAccuracy(delta_accuracy - delay.getElapsedTime())) == eAccuracy::ACC_MISS)
-						accuracy = eAccuracy::ACC_BAD;
-					gscreen->setAccuracy(accuracy, this->_notes_played);
-					it->setBeenHeld(true);
+					if (!it->hasBeenHeld())
+					{
+						if ((accuracy = this->getAccuracy(delta_accuracy - delay.getElapsedTime())) == eAccuracy::ACC_MISS)
+							accuracy = eAccuracy::ACC_BAD;
+						gscreen->setAccuracy(accuracy, this->_notes_played);
+						it->setHeld(false);
+						it->setBeenHeld(true);
+					}
 				}
 			}
 		}
-
-		if (!sf::Keyboard::isKeyPressed(sf::Keyboard::T))
-			std::cout << "T2 : " << this->_game_clock.getElapsedTime().asSeconds() << std::endl;
 
 		break;
 	case sf::Event::MouseButtonReleased:
