@@ -118,10 +118,20 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 
 		if (it->getDuration() > 0.f)
 		{
-			if (it->isHeld())
+			sf::Color	playing(it->getBaseColor());
+
+			it->scaleDuration(this->_game_clock.getElapsedTime());
+			it->scaleLongNote(gscreen->getSpeed());
+
+			//If the long note reach the cursor
+			if (it->getTime().asSeconds() - this->_game_clock.getElapsedTime().asSeconds() <= 0.f)
 			{
-				it->scaleDuration(this->_game_clock.getElapsedTime());
-				it->scaleLongNote(gscreen->getSpeed());
+				tmp[0]->setPosition(sf::Vector2f(
+					gscreen->getCursor().getPosition().x,
+					gscreen->getCursor().getPosition().y));
+				tmp[1]->setPosition(tmp[0]->getPosition());
+				if (!it->isHeld())
+					playing = sf::Color(0, 0, 255, 170);
 			}
 
 			tmp[2]->setPosition(sf::Vector2f(
@@ -129,15 +139,17 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 				tmp[0]->getPosition().y + (tmp[0]->getGlobalBounds().height / 2.f * it->getDirection().y)));
 			tmp[3]->setPosition(tmp[2]->getPosition());
 
-			tmp[4]->setPosition(sf::Vector2f(
-				tmp[2]->getPosition().x + (tmp[2]->getGlobalBounds().width / 2.f + tmp[4]->getGlobalBounds().width / 2.f) * it->getDirection().x,
-				tmp[2]->getPosition().y + (tmp[2]->getGlobalBounds().height / 2.f + tmp[4]->getGlobalBounds().height / 2.f) * it->getDirection().y));
-			tmp[5]->setPosition(tmp[4]->getPosition());
+			for (unsigned int i = 4; i < tmp.size(); i += 2)
+			{
+				tmp[i]->setPosition(sf::Vector2f(
+					tmp[i - 2]->getPosition().x + (tmp[i - 2]->getGlobalBounds().width / 2.f + tmp[i]->getGlobalBounds().width / 2.f) * it->getDirection().x,
+					tmp[i - 2]->getPosition().y + (tmp[i - 2]->getGlobalBounds().height / 2.f + tmp[i]->getGlobalBounds().height / 2.f) * it->getDirection().y));
+				tmp[i + 1]->setPosition(tmp[i]->getPosition());
+			}
 
-			tmp[6]->setPosition(sf::Vector2f(
-				tmp[4]->getPosition().x + (tmp[4]->getGlobalBounds().width / 2.f + tmp[6]->getGlobalBounds().width / 2.f) * it->getDirection().x,
-				tmp[4]->getPosition().y + (tmp[4]->getGlobalBounds().height / 2.f + tmp[6]->getGlobalBounds().height / 2.f) * it->getDirection().y));
-			tmp[7]->setPosition(tmp[6]->getPosition());
+			if (tmp[0]->getColor() != playing)
+				for (auto it2 : tmp)
+					it2->setColor(playing);
 		}
 	}
 
@@ -236,10 +248,12 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
 					delta_accuracy = note_length - this->_game_clock.getElapsedTime();
 
-				std::cout << "Delta accuracy released : " << delta_accuracy.asMilliseconds() - delay.getElapsedTime().asMilliseconds() << std::endl;
-
 				if (delta_accuracy < sf::seconds(this->_timing_gaps[this->_timing_gaps.size() - 1].y))
 				{
+					std::cout << "Note length = " << note_length.asSeconds() << std::endl;
+					std::cout << "Time elapsed = " << this->_game_clock.getElapsedTime().asSeconds() << std::endl;
+					std::cout << "Delta accuracy released : " << delta_accuracy.asMilliseconds() - delay.getElapsedTime().asMilliseconds() << std::endl;
+
 					if (!it->hasBeenHeld())
 					{
 						if ((accuracy = this->getAccuracy(delta_accuracy - delay.getElapsedTime())) == eAccuracy::ACC_MISS)
@@ -261,24 +275,26 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 		break;
 	}
 
-	//If the note hit the death bar and hasn't been played, delete it (for short note) or short it (for long note)
+	//If the note hit the death bar and hasn't been played, delete it and set accuracy depending on short or long note (held or not)
 	for (auto it = this->_next_notes.begin(); it != this->_next_notes.end();)
 	{
 		if ((*it)->getTime().asMilliseconds() - this->_game_clock.getElapsedTime().asMilliseconds() < this->_timing_gaps[this->_timing_gaps.size() - 1].x)
 		{
+			//A long not that reach the death bar always has its duration set to 0.
 			if ((*it)->getDuration() == 0.f)
 			{
+				//hasBeenHeld is set to "true" if the user played a long note and released the key.
+				//That means if the long note reached the death bar but the user didn't released the key, he will have a "bad".
+				//It also means that short note (that cannot be hold) will always display a "miss" if it reach the death bar.
 				if (!(*it)->hasBeenHeld())
-					gscreen->setAccuracy(eAccuracy::ACC_MISS, this->_notes_played);
+				{
+					if ((*it)->isHeld())
+						gscreen->setAccuracy(eAccuracy::ACC_BAD, this->_notes_played);
+					else
+						gscreen->setAccuracy(eAccuracy::ACC_MISS, this->_notes_played);
+				}
 				gscreen->removeNote(**it);
 				it = this->_next_notes.erase(it);
-			}
-
-			else if (!(*it)->isHeld())
-			{
-				(*it)->scaleDuration(this->_game_clock.getElapsedTime());
-				(*it)->scaleLongNote(gscreen->getSpeed());
-				++it;
 			}
 			else
 				++it;

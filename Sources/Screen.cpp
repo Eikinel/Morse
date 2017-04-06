@@ -59,7 +59,7 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	sf::Vector2f		win_size(window.getSize());
 	sf::VertexArray		va_tmp(sf::LinesStrip, 2);
 
-	va_tmp[0].color = va_tmp[1].color = sf::Color::Cyan;
+	va_tmp[0].color = va_tmp[1].color = sf::Color::Green;
 	va_tmp[0].position = sf::Vector2f(win_size.x / 2.f, 0);
 	va_tmp[1].position = sf::Vector2f(win_size.x / 2.f, win_size.y);
 	this->_cross.push_back(va_tmp);
@@ -381,13 +381,10 @@ void	GameScreen::restart()
 	this->_notes.push_back(new Note(sf::seconds(3.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(3.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(4.f), 10.f, sf::Vector2i(0, -1), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(4.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(4.f), 5.f, sf::Vector2i(-1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(4.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(5.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(5.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(6.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(6.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(7.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(7.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
 	this->_notes_size = this->_notes.size();
 	this->_sprite_accuracy = sf::Sprite();

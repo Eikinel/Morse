@@ -1,10 +1,3 @@
-﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (RhythmGame.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  Note.cpp
-  Event.cpp
-h:\documents\projets\morse\includes\collider.h(61): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-h:\documents\projets\morse\sources\event.cpp(81): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-h:\documents\projets\morse\sources\event.cpp(168): warning C4244: 'argument' : conversion de 'float' en 'sf::Int32', perte possible de données
-h:\documents\projets\morse\sources\event.cpp(169): warning C4244: 'argument' : conversion de 'float' en 'sf::Int32', perte possible de données
-  Génération de code en cours...
-  RhythmGame.vcxproj -> H:\Documents\Projets\Morse\Debug\Morse.exe
-  RhythmGame.vcxproj -> H:\Documents\Projets\Morse\Debug\Morse.pdb (Full PDB)
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(387,5): warning MSB8028: Le répertoire intermédiaire (Debug\) contient des fichiers partagés provenant d'un autre projet (RhythmGame.vcxproj). Cela peut entraîner un comportement de nettoyage et de régénération incorrect.
+  RhythmGame.vcxproj -> C:\Users\Eikinel\Documents\Projets\Morse\Debug\Morse.exe
+  RhythmGame.vcxproj -> C:\Users\Eikinel\Documents\Projets\Morse\Debug\Morse.pdb (Partial PDB)

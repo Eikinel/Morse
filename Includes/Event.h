@@ -88,9 +88,6 @@ private:
 
 	//GETTERS
 	const eAccuracy		getAccuracy(const sf::Time& delta) const;
-
-	//METHODS
-	void	shortenNote(const Note& note);
 };
 
 std::string	setPrecision(float value, unsigned int precision);

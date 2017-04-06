@@ -22,9 +22,11 @@ public:
 	//GETTERS
 	const sf::Time&						getTime() const;
 	const float							getDuration() const;
-	const float							getLength() const;
 	const sf::Vector2i&					getDirection() const;
 	const std::vector<sf::Sprite *>&	getSprites() const;
+	const sf::Color&					getBaseColor() const;
+
+	const float							getLength() const;
 	const bool							isHeld() const;
 	const bool							hasBeenHeld() const;
 
@@ -43,6 +45,7 @@ protected:
 	float						_duration; // 0.f = short note
 	sf::Vector2i				_direction;
 	std::vector<sf::Sprite *>	_sprites;
+	sf::Color					_base_color;
 
 	//For long note only
 	float						_length; // to perform scaling operations
