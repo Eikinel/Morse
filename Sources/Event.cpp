@@ -120,12 +120,11 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 		{
 			sf::Color	playing(it->getBaseColor());
 
-			it->scaleDuration(this->_game_clock.getElapsedTime());
-			it->scaleLongNote(gscreen->getSpeed());
-
 			//If the long note reach the cursor
 			if (it->getTime().asSeconds() - this->_game_clock.getElapsedTime().asSeconds() <= 0.f)
 			{
+				it->scaleDuration(this->_game_clock.getElapsedTime());
+				it->scaleLongNote(gscreen->getSpeed());
 				tmp[0]->setPosition(sf::Vector2f(
 					gscreen->getCursor().getPosition().x,
 					gscreen->getCursor().getPosition().y));
@@ -135,8 +134,8 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 			}
 
 			tmp[2]->setPosition(sf::Vector2f(
-				tmp[0]->getPosition().x + (tmp[0]->getGlobalBounds().width / 2.f * it->getDirection().x),
-				tmp[0]->getPosition().y + (tmp[0]->getGlobalBounds().height / 2.f * it->getDirection().y)));
+				tmp[0]->getPosition().x + (tmp[0]->getGlobalBounds().width / 2.f * it->getDirection().x) - (tmp[2]->getGlobalBounds().width / 2 * it->getDirection().x),
+				tmp[0]->getPosition().y + (tmp[0]->getGlobalBounds().height / 2.f * it->getDirection().y) - (tmp[2]->getGlobalBounds().height / 2 * it->getDirection().y)));
 			tmp[3]->setPosition(tmp[2]->getPosition());
 
 			for (unsigned int i = 4; i < tmp.size(); i += 2)
