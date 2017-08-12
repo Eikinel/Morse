@@ -22,7 +22,7 @@
     <ProjectGuid>{D38A1EF1-0A11-428D-B6CD-B90489FBEE8B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>RhythmGame</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
     <ProjectName>Morse</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

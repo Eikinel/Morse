@@ -375,17 +375,6 @@ void	GameScreen::restart()
 
 	this->_user_accuracy = 100.f;
 	this->_current_accuracy = 0.f;
-	/*this->_notes.push_back(new Note(sf::seconds(1.5), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(2.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(2.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(3.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(3.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(4.f), 10.f, sf::Vector2i(0, -1), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(4.f), 5.f, sf::Vector2i(-1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(4.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(5.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(6.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(7.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));*/
 	this->_notes.push_back(new Note(sf::seconds(1.f), 0.1f, sf::Vector2i(-1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(2.f), 0.2f, sf::Vector2i(-1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(3.f), 0.5f, sf::Vector2i(-1, 0), textures, this->_speed));
@@ -394,6 +383,18 @@ void	GameScreen::restart()
 	this->_notes.push_back(new Note(sf::seconds(6.f), 0.2f, sf::Vector2i(0, 1), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(7.f), 0.5f, sf::Vector2i(0, 1), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(8.f), 1.f, sf::Vector2i(0, 1), textures, this->_speed));
+
+	this->_notes.push_back(new Note(sf::seconds(9.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(10.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(10.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(11.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(11.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(12.f), 10.f, sf::Vector2i(0, -1), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(12.f), 5.f, sf::Vector2i(-1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(12.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(13.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(14.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_notes.push_back(new Note(sf::seconds(15.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
 	this->_notes_size = this->_notes.size();
 	this->_sprite_accuracy = sf::Sprite();
 }

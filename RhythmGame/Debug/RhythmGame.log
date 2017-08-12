@@ -1,0 +1,5 @@
+﻿  Main.cpp
+d:\documents\projets\morse\sources\main.cpp(8): warning C4244: 'argument' : conversion de 'float' en 'unsigned int', perte possible de données
+d:\documents\projets\morse\sources\main.cpp(18): warning C4018: '<' : incompatibilité signed/unsigned
+  RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.exe
+  RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.pdb (Partial PDB)
