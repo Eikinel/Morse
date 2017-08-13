@@ -1,5 +1,8 @@
-﻿  Main.cpp
-d:\documents\projets\morse\sources\main.cpp(8): warning C4244: 'argument' : conversion de 'float' en 'unsigned int', perte possible de données
-d:\documents\projets\morse\sources\main.cpp(18): warning C4018: '<' : incompatibilité signed/unsigned
+﻿  Event.cpp
+d:\documents\projets\morse\includes\collider.h(61): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+d:\documents\projets\morse\sources\event.cpp(114): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+d:\documents\projets\morse\sources\event.cpp(282): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
+d:\documents\projets\morse\sources\event.cpp(283): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
+d:\documents\projets\morse\sources\event.cpp(192): warning C4715: 'GameEvent::removeNote' : les chemins de contrôle ne retournent pas tous une valeur
   RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.exe
   RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.pdb (Partial PDB)

@@ -7,6 +7,8 @@ enum	eGamestate;
 enum	eAccuracy;
 class	IScreen;
 class	Note;
+class	Phase;
+
 
 class				IEvent
 {
@@ -76,18 +78,55 @@ class				GameEvent : public IEvent
 {
 public:
 	GameEvent();
+	virtual ~GameEvent();
+
+	virtual int		update(IScreen& screen, sf::Event& event);
+	virtual void	draw(IScreen& screen);
+
+	//GETTERS
+	const sf::Clock&				getGameClock() const;
+	const std::vector<Note *>&		getNextNotes() const;
+	const std::vector<sf::Vector2f>	getTimingGaps() const;
+	const eAccuracy					getAccuracy(const sf::Time& delta) const;
+
+	//METHODS
+	auto	removeNote(const Note& note);
+	void	restart();
+
+private:
+	sf::Clock					_game_clock;
+	const Phase*				_current_phase;
+	std::vector<Note *>			_next_notes;
+	std::vector<sf::Vector2f>	_timing_gaps;
+	std::vector<IEvent *>		_phases_events;
+};
+
+class				AttackEvent : public IEvent
+{
+public:
+	AttackEvent(GameEvent& gevent);
+	virtual ~AttackEvent();
+
+	virtual int		update(IScreen& screen, sf::Event& event);
+	virtual void	draw(IScreen& screen);
+
+	//GETTERS
+
+private:
+	GameEvent&			_gevent;
+};
+
+class				DefenseEvent : public IEvent
+{
+public:
+	DefenseEvent(GameEvent& gevent);
+	virtual ~DefenseEvent();
 
 	virtual int		update(IScreen& screen, sf::Event& event);
 	virtual void	draw(IScreen& screen);
 
 private:
-	sf::Clock					_game_clock;
-	std::vector<Note *>			_next_notes;
-	std::vector<sf::Vector2f>	_timing_gaps;
-	std::vector<eAccuracy>		_notes_played;
-
-	//GETTERS
-	const eAccuracy		getAccuracy(const sf::Time& delta) const;
+	GameEvent&			_gevent;
 };
 
 std::string	setPrecision(float value, unsigned int precision);

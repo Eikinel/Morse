@@ -2,6 +2,7 @@
 #include "Event.h"
 #include "Button.h"
 #include "Skin.h"
+#include "Phase.h"
 
 
 //CONSTRUCTORS
@@ -66,6 +67,7 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	va_tmp[0].position = sf::Vector2f(0, win_size.y / 2.f);
 	va_tmp[1].position = sf::Vector2f(win_size.x, win_size.y / 2.f);
 	this->_cross.push_back(va_tmp);
+
 	this->_speed = 10;
 	this->_accuracy_ratio[eAccuracy::ACC_MISS] = 0.f;
 	this->_accuracy_ratio[eAccuracy::ACC_BAD] = 0.3334f;
@@ -77,6 +79,10 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 		this->_cursor.getGlobalBounds().width / 2.f,
 		this->_cursor.getGlobalBounds().height / 2.f));
 	this->_cursor.setPosition(sf::Vector2f(win_size.x / 2.f, win_size.y / 2.f));
+	this->_phase_text.setFont(this->_main_font);
+	this->_phase_text.setCharacterSize(42);
+	this->_phase_text.setPosition(sf::Vector2f(10, win_size.y - 50));
+
 	this->restart();
 }
 
@@ -98,6 +104,11 @@ GameScreen::~GameScreen()
 {
 	std::cout << "Deleting game screen" << std::endl;
 	delete(this->_skin);
+
+	for (auto it : this->_phases)
+		delete(it);
+	for (auto it : this->_notes)
+		delete(it);
 }
 
 
@@ -149,6 +160,26 @@ std::vector<Button *>&	MenuScreen::getButtons()
 }
 
 
+const std::vector<Phase *>&	GameScreen::getPhases() const
+{
+	return (this->_phases);
+}
+
+const Phase*	GameScreen::getPhaseByTime(const sf::Time& time) const
+{
+	Phase*	phase = NULL;
+
+	for (auto it : this->_phases)
+	{
+		if (it->getTime() <= time)
+			phase = it;
+		else
+			break;
+	}
+
+	return (phase);
+}
+
 const std::vector<Note *>&	GameScreen::getNotes() const
 {
 	return (this->_notes);
@@ -190,6 +221,11 @@ const unsigned int	GameScreen::getNotesSize() const
 	return (this->_notes_size);
 }
 
+const std::vector<eAccuracy>&	GameScreen::getNotesPlayed() const
+{
+	return (this->_notes_played);
+}
+
 const std::vector<sf::VertexArray>&	GameScreen::getCross() const
 {
 	return (this->_cross);
@@ -218,6 +254,11 @@ const sf::Sprite&	GameScreen::getCursor() const
 const sf::Sprite&	GameScreen::getSpriteAccuracy() const
 {
 	return (this->_sprite_accuracy);
+}
+
+const sf::Text&	GameScreen::getPhaseText() const
+{
+	return (this->_phase_text);
 }
 
 
@@ -280,17 +321,22 @@ void	GameScreen::setSpriteAccuracy(const eAccuracy accuracy)
 		this->_window.getSize().y / 2.f - this->_cursor.getGlobalBounds().height * 1.5f));
 }
 
-void	GameScreen::setUserAccuracy(const eAccuracy accuracy, std::vector<eAccuracy>& notes_played)
+void	GameScreen::addUserAccuracy(const eAccuracy accuracy)
 {
-	this->_current_accuracy += this->_accuracy_ratio[notes_played[notes_played.size() - 1]];
-	this->_user_accuracy = (this->_current_accuracy / notes_played.size()) * 100.f;
+	this->_current_accuracy += this->_accuracy_ratio[this->_notes_played[this->_notes_played.size() - 1]];
+	this->_user_accuracy = (this->_current_accuracy / this->_notes_played.size()) * 100.f;
 }
 
-void	GameScreen::setAccuracy(const eAccuracy accuracy, std::vector<eAccuracy>& notes_played)
+void	GameScreen::addAccuracy(const eAccuracy accuracy)
 {
-	notes_played.push_back(accuracy);
+	this->_notes_played.push_back(accuracy);
 	this->setSpriteAccuracy(accuracy);
-	this->setUserAccuracy(accuracy, notes_played);
+	this->addUserAccuracy(accuracy);
+}
+
+void	GameScreen::setPhaseText(const std::string& text)
+{
+	this->_phase_text.setString(text);
 }
 
 
@@ -373,9 +419,18 @@ void	GameScreen::restart()
 		it = this->_notes.erase(it);
 	}
 
+	for (auto it = this->_phases.begin(); it != this->_phases.end();)
+	{
+		delete(*it);
+		it = this->_phases.erase(it);
+	}
+
 	this->_user_accuracy = 100.f;
 	this->_current_accuracy = 0.f;
-	this->_notes.push_back(new Note(sf::seconds(1.f), 0.1f, sf::Vector2i(-1, 0), textures, this->_speed));
+	this->_notes_played.clear();
+
+	this->_phases.push_back(new Phase(ePhase::DEFENSE, sf::seconds(0.f)));
+	//this->_notes.push_back(new Note(sf::seconds(1.f), 0.1f, sf::Vector2i(-1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(2.f), 0.2f, sf::Vector2i(-1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(3.f), 0.5f, sf::Vector2i(-1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(4.f), 1.f, sf::Vector2i(-1, 0), textures, this->_speed));
@@ -384,6 +439,7 @@ void	GameScreen::restart()
 	this->_notes.push_back(new Note(sf::seconds(7.f), 0.5f, sf::Vector2i(0, 1), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(8.f), 1.f, sf::Vector2i(0, 1), textures, this->_speed));
 
+	this->_phases.push_back(new Phase(ePhase::ATTACK, sf::seconds(9.5f)));
 	this->_notes.push_back(new Note(sf::seconds(9.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(10.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
 	this->_notes.push_back(new Note(sf::seconds(10.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
@@ -397,4 +453,26 @@ void	GameScreen::restart()
 	this->_notes.push_back(new Note(sf::seconds(15.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
 	this->_notes_size = this->_notes.size();
 	this->_sprite_accuracy = sf::Sprite();
+}
+
+std::vector<sf::Vector2f> calcBezier(const sf::Vector2f &start, const sf::Vector2f &end,
+	const sf::Vector2f &start_control, const sf::Vector2f &end_control, const size_t num_segments)
+{
+	std::vector<sf::Vector2f> ret;
+
+	if (!num_segments) // Any points at all?
+		return ret;
+
+	ret.push_back(start); // First point is fixed
+
+	float p = 1.f / num_segments;
+	float q = p;
+	for (size_t i = 1; i < num_segments; i++, p += q) // Generate all between
+		ret.push_back(p * p * p * (end + 3.f * (start_control - end_control) - start) +
+			3.f * p * p * (start - 2.f * start_control + end_control) +
+			3.f * p * (start_control - start) + start);
+
+	ret.push_back(end); // Last point is fixed
+
+	return ret;
 }

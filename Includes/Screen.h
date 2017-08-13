@@ -3,8 +3,10 @@
 # include "Constants.h"
 # include "Note.h"
 
+enum ePhase;
 class IEvent;
 class Button;
+class Phase;
 class Note;
 class Skin;
 
@@ -74,32 +76,39 @@ public:
 	virtual ~GameScreen();
 
 	//GETTERS
+	const std::vector<Phase *>&			getPhases() const;
+	const Phase*						getPhaseByTime(const sf::Time& time) const;
 	const std::vector<Note *>&			getNotes() const;
 	const std::vector<Note *>			getNextNotes(const sf::Time& time) const;
 	const std::vector<Note *>			getNotesWithSameTiming(const sf::Time& time, const float& length) const;
 	const Note&							getNoteByIndex(unsigned int index) const;
 	const unsigned int					getNotesSize() const;
+	const std::vector<eAccuracy>&		getNotesPlayed() const;
 	const std::vector<sf::VertexArray>&	getCross() const;
 	const unsigned int					getSpeed() const;
 	const float							getUserAccuracy() const;
 	const Skin&							getSkin() const;
 	const sf::Sprite&					getCursor() const;
 	const sf::Sprite&					getSpriteAccuracy() const;
+	const sf::Text&						getPhaseText() const;
 
 	//SETTERS
 	void	removeNote(const Note& note);
 	void	addSpeed(const int offset);
 	void	setSpriteAccuracy(const eAccuracy accuracy);
-	void	setUserAccuracy(const eAccuracy accuracy, std::vector<eAccuracy>& notes_played);
-	void	setAccuracy(const eAccuracy accuracy, std::vector<eAccuracy>& notes_played);
+	void	addUserAccuracy(const eAccuracy accuracy);
+	void	addAccuracy(const eAccuracy accuracy);
+	void	setPhaseText(const std::string& text);
 
 	//METHODS
 	virtual int		run();
 	void			restart();
 
 protected:
+	std::vector<Phase *>			_phases;
 	std::vector<Note *>				_notes; // Map file with all notes will be here
 	unsigned int					_notes_size;
+	std::vector<eAccuracy>			_notes_played;
 	std::vector<sf::VertexArray>	_cross;
 	unsigned int					_speed;
 	float							_user_accuracy;
@@ -108,4 +117,8 @@ protected:
 	Skin*							_skin;
 	sf::Sprite						_cursor;
 	sf::Sprite						_sprite_accuracy;
+	sf::Text						_phase_text;
 };
+
+std::vector<sf::Vector2f> calcBezier(const sf::Vector2f &start, const sf::Vector2f &end,
+	const sf::Vector2f &start_control, const sf::Vector2f &end_control, const size_t num_segments);

@@ -167,6 +167,7 @@
     <ClInclude Include="..\Includes\Entity.h" />
     <ClInclude Include="..\Includes\Event.h" />
     <ClInclude Include="..\Includes\Note.h" />
+    <ClInclude Include="..\Includes\Phase.h" />
     <ClInclude Include="..\Includes\Screen.h" />
     <ClInclude Include="..\Includes\Skin.h" />
   </ItemGroup>

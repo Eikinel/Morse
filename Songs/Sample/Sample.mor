@@ -1,0 +1,7 @@
+## A Morse file is composed like that :
+## [DEFENSE|ATTACK PHASE]
+## TIME, LENGTH, DIRECTION_X, DIRECTION_Y
+
+[DEFENSE]
+1, 0, 1, 0
+2, 1.5, 1, 0
