@@ -96,9 +96,9 @@ public:
 private:
 	sf::Clock					_game_clock;
 	const Phase*				_current_phase;
+	std::vector<IEvent *>		_phases_events;
 	std::vector<Note *>			_next_notes;
 	std::vector<sf::Vector2f>	_timing_gaps;
-	std::vector<IEvent *>		_phases_events;
 };
 
 class				AttackEvent : public IEvent
@@ -110,10 +110,13 @@ public:
 	virtual int		update(IScreen& screen, sf::Event& event);
 	virtual void	draw(IScreen& screen);
 
-	//GETTERS
-
 private:
-	GameEvent&			_gevent;
+	GameEvent&		_gevent;
+	float			_power; // For keyboard players, speed value of the arrow
+	float			_accelerator; // When enabled, increase the strength
+	bool			_is_accelerated;
+	sf::Transform	_rot_arrow; // Transformation to apply to the arrow
+	sf::Transform	_pos_curve;
 };
 
 class				DefenseEvent : public IEvent
@@ -126,7 +129,7 @@ public:
 	virtual void	draw(IScreen& screen);
 
 private:
-	GameEvent&			_gevent;
+	GameEvent&	_gevent;
 };
 
 std::string	setPrecision(float value, unsigned int precision);

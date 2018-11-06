@@ -1,8 +1,23 @@
-﻿  Event.cpp
+﻿  Skin.cpp
+  Screen.cpp
+d:\documents\projets\morse\sources\screen.cpp(22): warning C4244: 'argument' : conversion de 'float' en 'unsigned int', perte possible de données
+d:\documents\projets\morse\sources\screen.cpp(40): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
+d:\documents\projets\morse\sources\screen.cpp(43): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
+d:\documents\projets\morse\sources\screen.cpp(46): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
+d:\documents\projets\morse\sources\screen.cpp(49): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
+  Note.cpp
+  Main.cpp
+d:\documents\projets\morse\sources\main.cpp(8): warning C4244: 'argument' : conversion de 'float' en 'unsigned int', perte possible de données
+d:\documents\projets\morse\sources\main.cpp(18): warning C4018: '<' : incompatibilité signed/unsigned
+  Event.cpp
 d:\documents\projets\morse\includes\collider.h(61): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-d:\documents\projets\morse\sources\event.cpp(114): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-d:\documents\projets\morse\sources\event.cpp(282): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
-d:\documents\projets\morse\sources\event.cpp(283): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
-d:\documents\projets\morse\sources\event.cpp(192): warning C4715: 'GameEvent::removeNote' : les chemins de contrôle ne retournent pas tous une valeur
+d:\documents\projets\morse\sources\event.cpp(118): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+d:\documents\projets\morse\sources\event.cpp(352): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
+d:\documents\projets\morse\sources\event.cpp(353): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
+  Bezier.cpp
+d:\documents\projets\morse\sources\bezier.cpp(107): warning C4018: '<' : incompatibilité signed/unsigned
+d:\documents\projets\morse\sources\bezier.cpp(140): warning C4018: '<' : incompatibilité signed/unsigned
+  Génération de code en cours...
+d:\documents\projets\morse\sources\event.cpp(212): warning C4715: 'GameEvent::removeNote' : les chemins de contrôle ne retournent pas tous une valeur
   RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.exe
   RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.pdb (Partial PDB)

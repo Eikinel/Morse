@@ -7,7 +7,7 @@ enum ePhase;
 class IEvent;
 class Button;
 class Phase;
-class Note;
+class Bezier;
 class Skin;
 
 enum				eGamestate
@@ -40,7 +40,7 @@ public:
 
 	//METHODS
 	virtual int		run();
-	virtual void	draw(const sf::Drawable& object);
+	virtual void	draw(const sf::Drawable& object, sf::RenderStates states = sf::RenderStates());
 
 protected:
 	sf::RenderWindow&		_window;
@@ -76,21 +76,28 @@ public:
 	virtual ~GameScreen();
 
 	//GETTERS
-	const std::vector<Phase *>&			getPhases() const;
-	const Phase*						getPhaseByTime(const sf::Time& time) const;
-	const std::vector<Note *>&			getNotes() const;
-	const std::vector<Note *>			getNextNotes(const sf::Time& time) const;
-	const std::vector<Note *>			getNotesWithSameTiming(const sf::Time& time, const float& length) const;
-	const Note&							getNoteByIndex(unsigned int index) const;
-	const unsigned int					getNotesSize() const;
-	const std::vector<eAccuracy>&		getNotesPlayed() const;
+	// General
+	const std::vector<Phase *>&		getPhases() const;
+	const Phase*					getPhaseByTime(const sf::Time& time) const;
+	const std::vector<Note *>&		getNotes() const;
+	const std::vector<Note *>		getNextNotes(const sf::Time& time) const;
+	const std::vector<Note *>		getNotesWithSameTiming(const sf::Time& time, const float& length) const;
+	const Note&						getNoteByIndex(unsigned int index) const;
+	const unsigned int				getNotesSize() const;
+	const std::vector<eAccuracy>&	getNotesPlayed() const;
+	const unsigned int				getSpeed() const;
+	const float						getUserAccuracy() const;
+	const Skin&						getSkin() const;
+	const sf::Sprite&				getCursor() const;
+	const sf::Sprite&				getSpriteAccuracy() const;
+	const sf::Text&					getPhaseText() const;
+
+	// Attack phase
+	const sf::Sprite&				getArrow() const;
+	const std::vector<Bezier *>&	getBezierCurves() const;
+
+	// Defense phase
 	const std::vector<sf::VertexArray>&	getCross() const;
-	const unsigned int					getSpeed() const;
-	const float							getUserAccuracy() const;
-	const Skin&							getSkin() const;
-	const sf::Sprite&					getCursor() const;
-	const sf::Sprite&					getSpriteAccuracy() const;
-	const sf::Text&						getPhaseText() const;
 
 	//SETTERS
 	void	removeNote(const Note& note);
@@ -104,12 +111,12 @@ public:
 	virtual int		run();
 	void			restart();
 
-protected:
+private:
+	// Game phase
 	std::vector<Phase *>			_phases;
 	std::vector<Note *>				_notes; // Map file with all notes will be here
 	unsigned int					_notes_size;
 	std::vector<eAccuracy>			_notes_played;
-	std::vector<sf::VertexArray>	_cross;
 	unsigned int					_speed;
 	float							_user_accuracy;
 	float							_current_accuracy;
@@ -118,7 +125,11 @@ protected:
 	sf::Sprite						_cursor;
 	sf::Sprite						_sprite_accuracy;
 	sf::Text						_phase_text;
-};
 
-std::vector<sf::Vector2f> calcBezier(const sf::Vector2f &start, const sf::Vector2f &end,
-	const sf::Vector2f &start_control, const sf::Vector2f &end_control, const size_t num_segments);
+	// Attack phase
+	sf::Sprite				_arrow;
+	std::vector<Bezier *>	_bezier_curves;
+
+	// Defense phase
+	std::vector<sf::VertexArray>	_cross;
+};

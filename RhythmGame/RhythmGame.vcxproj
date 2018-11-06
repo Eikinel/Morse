@@ -153,6 +153,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Sources\Bezier.cpp" />
     <ClCompile Include="..\Sources\Button.cpp" />
     <ClCompile Include="..\Sources\Event.cpp" />
     <ClCompile Include="..\Sources\Main.cpp" />
@@ -161,6 +162,7 @@
     <ClCompile Include="..\Sources\Skin.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Includes\Bezier.h" />
     <ClInclude Include="..\Includes\Button.h" />
     <ClInclude Include="..\Includes\Collider.h" />
     <ClInclude Include="..\Includes\Constants.h" />

@@ -15,12 +15,14 @@ public:
 	{
 		std::string	names[] = { "Attack", "Defense" };
 
+		std::cout << "Creating " << names[type] << " phase at " << time.asSeconds() << std::endl;
+
 		this->_type = type;
 		this->_name = names[type];
 		this->_time = time;
 	}
 
-	~Phase() {}
+	~Phase() { std::cout << "Deleting phase " << this->_name << std::endl; }
 
 
 	//GETTERS

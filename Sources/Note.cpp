@@ -1,8 +1,7 @@
 #include "Note.h"
 #include "Entity.h"
 
-Note::Note(const sf::Time& time, const float duration, const sf::Vector2i& direction,
-	const std::vector<const sf::Texture *>& textures, const unsigned int& speed)
+Note::Note(const sf::Time& time, const float duration, const sf::Vector2i& direction)
 {
 	if (time.asSeconds() >= 0.f && duration >= 0.f && direction.x != direction.y && direction.x != -direction.y)
 	{
@@ -17,30 +16,6 @@ Note::Note(const sf::Time& time, const float duration, const sf::Vector2i& direc
 		this->_is_held = false;
 		this->_has_been_held = false;
 		this->_base_color = sf::Color(255, 255, 255, 255);
-		this->_sprites.push_back(new sf::Sprite(*textures[0]));
-		this->_sprites.push_back(new sf::Sprite(*textures[1]));
-		if (this->_duration > 0.f)
-		{
-			this->_sprites.push_back(new sf::Sprite(*textures[2]));
-			this->_sprites.push_back(new sf::Sprite(*textures[3]));
-			this->_sprites.push_back(new sf::Sprite(*textures[4]));
-			this->_sprites.push_back(new sf::Sprite(*textures[5]));
-			this->_sprites.push_back(new sf::Sprite(*textures[6]));
-			this->_sprites.push_back(new sf::Sprite(*textures[7]));
-			this->scaleLongNote(speed);
-		}
-
-		for (auto it : this->_sprites)
-		{
-			if (this->_direction.x != 0)
-				it->setRotation(90.f * (this->_direction.x == 1 ? 0 : 2));
-			else if (this->_direction.y != 0)
-				it->setRotation(90.f * (this->_direction.y == 1 ? 1 : 3));
-			it->setOrigin(sf::Vector2f(
-				it->getLocalBounds().width / 2.f,
-				it->getLocalBounds().height / 2.f));
-			it->setColor(this->_base_color);
-		}
 	}
 	else
 	{
@@ -111,6 +86,34 @@ void	Note::setDuration(float duration)
 	this->_duration = duration;
 }
 
+void	Note::setSprites(std::vector<const sf::Texture *>& textures)
+{
+	this->_sprites.push_back(new sf::Sprite(*textures[0]));
+	this->_sprites.push_back(new sf::Sprite(*textures[1]));
+
+	if (this->_duration > 0.f)
+	{
+		this->_sprites.push_back(new sf::Sprite(*textures[2]));
+		this->_sprites.push_back(new sf::Sprite(*textures[3]));
+		this->_sprites.push_back(new sf::Sprite(*textures[4]));
+		this->_sprites.push_back(new sf::Sprite(*textures[5]));
+		this->_sprites.push_back(new sf::Sprite(*textures[6]));
+		this->_sprites.push_back(new sf::Sprite(*textures[7]));
+	}
+
+	for (auto it : this->_sprites)
+	{
+		if (this->_direction.x != 0)
+			it->setRotation(90.f * (this->_direction.x == 1 ? 0 : 2));
+		else if (this->_direction.y != 0)
+			it->setRotation(90.f * (this->_direction.y == 1 ? 1 : 3));
+		it->setOrigin(sf::Vector2f(
+			it->getLocalBounds().width / 2.f,
+			it->getLocalBounds().height / 2.f));
+		it->setColor(this->_base_color);
+	}
+}
+
 void	Note::scaleDuration(const sf::Time& offset)
 {
 	this->setDuration(this->_length - offset.asSeconds());
@@ -118,8 +121,13 @@ void	Note::scaleDuration(const sf::Time& offset)
 
 void	Note::scaleLongNote(const unsigned int& speed)
 {
-	this->_sprites[4]->setScale(sf::Vector2f(this->_duration * speed, 1.f));
-	this->_sprites[5]->setScale(this->_sprites[4]->getScale());
+	if (this->_sprites[4] && this->_sprites[5])
+	{
+		this->_sprites[4]->setScale(sf::Vector2f(this->_duration * speed, 1.f));
+		this->_sprites[5]->setScale(this->_sprites[4]->getScale());
+	}
+	else
+		std::cerr << "Long note sprites don't exist" << std::endl;
 }
 
 void	Note::setHeld(const bool held)

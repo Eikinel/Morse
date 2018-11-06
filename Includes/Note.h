@@ -15,8 +15,10 @@ enum			eAccuracy
 class			Note
 {
 public:
-	Note(const sf::Time& time, const float duration, const sf::Vector2i& direction,
-		const std::vector<const sf::Texture *>& textures, const unsigned int& speed);
+	// CONSTRUCTOR (for attack)
+	//Note(const sf::Time& time, const float duration, const sf::Vector2i& );
+	// CONSTRUCTOR (for defense)
+	Note(const sf::Time& time, const float duration, const sf::Vector2i& direction = sf::Vector2i(0, 1));
 	virtual ~Note();
 
 	//GETTERS
@@ -32,6 +34,7 @@ public:
 
 	//SETTERS
 	void	setDuration(float duration);
+	void	setSprites(std::vector<const sf::Texture *>& textures);
 	void	scaleDuration(const sf::Time& offset);
 	void	scaleLongNote(const unsigned int& speed);
 	void	setHeld(const bool held);

@@ -5,6 +5,7 @@
 #include "Skin.h"
 #include "Note.h"
 #include "Phase.h"
+#include "Bezier.h"
 #include <iomanip>
 #include <sstream>
 
@@ -45,6 +46,9 @@ GameEvent::GameEvent()
 AttackEvent::AttackEvent(GameEvent& gevent) : _gevent(gevent)
 {
 	std::cout << "Creating AttackEvent" << std::endl;
+
+	this->_power = 1.f;
+	this->_accelerator = 5.f;
 }
 
 DefenseEvent::DefenseEvent(GameEvent& gevent) : _gevent(gevent)
@@ -140,6 +144,33 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 	this->_current_phase = gscreen->getPhaseByTime(this->_game_clock.getElapsedTime());
 	this->_next_notes = gscreen->getNextNotes(this->_game_clock.getElapsedTime());
 
+	switch (event.type)
+	{
+	case sf::Event::KeyPressed:
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || sf::Keyboard::isKeyPressed(sf::Keyboard::RControl))
+		{
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::F3))
+				gscreen->addSpeed(-1);
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::F4))
+				gscreen->addSpeed(1);
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+			{
+				gscreen->restart();
+				this->restart();
+			}
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+			return (this->changeScreen(eGamestate::MENU, gscreen));
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
+			std::cout << "T1 : " << this->_game_clock.getElapsedTime().asSeconds() << std::endl;
+
+		break;
+	}
+
 	if (this->_current_phase != NULL)
 	{
 		gscreen->setPhaseText(this->_current_phase->getName());
@@ -154,26 +185,15 @@ void	GameEvent::draw(IScreen& screen)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 
-	// THIS NEED URGENT UPDATE
-	// IDK WHY DefenseEvent::draw() DON'T DRAW ANYTHING
-	if (this->_current_phase->getType() == ePhase::DEFENSE)
-		for (auto it : gscreen->getCross())
-			gscreen->draw(it);
-
-	for (auto it : this->_next_notes)
+	/*for (auto it : this->_next_notes)
 		for (auto it2 : it->getSprites())
-			gscreen->draw(*it2);
+			gscreen->draw(*it2);*/
 
 	gscreen->draw(gscreen->getCursor());
 	gscreen->draw(gscreen->getFPSText());
 	gscreen->draw(gscreen->getSpriteAccuracy());
 	gscreen->draw(sf::Text(setPrecision(gscreen->getUserAccuracy(), 2) + " %", gscreen->getMainFont()));
 	gscreen->draw(gscreen->getPhaseText());
-}
-
-void	GameEvent::restart()
-{
-	this->_game_clock.restart();
 }
 
 auto	GameEvent::removeNote(const Note& note)
@@ -195,6 +215,46 @@ auto	GameEvent::removeNote(const Note& note)
 int		AttackEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
+	sf::Sprite	arrow = gscreen->getArrow();
+	const std::vector<Note *>&	next_notes = this->_gevent.getNextNotes();
+	const sf::Time& game_elapsed = this->_gevent.getGameClock().getElapsedTime();
+
+	// Give notes a position
+	for (auto it : next_notes)
+	{
+		const std::vector<sf::Sprite *>	tmp = it->getSprites();
+	}
+
+	const std::vector<Bezier *> curves = gscreen->getBezierCurves();
+
+	for (auto it : curves)
+	{
+		const sf::VertexArray curve = it->getBezierCurve();
+
+			//gscreen->getCursor().getPosition().x + ((game_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * curve[1].position.x - curve[0].position.x,
+			//gscreen->getCursor().getPosition().x + ((game_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * curve[1].position.y - curve[0].position.y));
+	}
+
+
+	//Check user action
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+		this->_is_accelerated = true;
+	else
+		this->_is_accelerated = false;
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+	{
+		float	arrow_direction = 0.f;
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+			arrow_direction = -1.f;
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+			arrow_direction = 1.f;
+
+		this->_rot_arrow.rotate(
+			arrow_direction * this->_power * (this->_is_accelerated ? this->_accelerator : 1),
+			gscreen->getCursor().getPosition());
+	}
 
 	return (screen.getIndex());
 }
@@ -202,21 +262,31 @@ int		AttackEvent::update(IScreen& screen, sf::Event& event)
 void	AttackEvent::draw(IScreen& screen)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
+
+	sf::CircleShape circle(5.f);
+	circle.setFillColor(sf::Color(255, 0, 0));
+
+	for (auto curve : gscreen->getBezierCurves())
+		gscreen->draw(curve->getBezierCurve(), this->_pos_curve);
+
+	gscreen->draw(gscreen->getArrow(), this->_rot_arrow);
 }
 
 
 int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
+	const std::vector<Note *>&	next_notes = this->_gevent.getNextNotes();
+	const sf::Time& game_elapsed = this->_gevent.getGameClock().getElapsedTime();
 
 	// Give notes a position
-	for (auto it : this->_gevent.getNextNotes())
+	for (auto it : next_notes)
 	{
 		const std::vector<sf::Sprite *>	tmp = it->getSprites();
 
 		tmp[0]->setPosition(sf::Vector2f(
-			gscreen->getCursor().getPosition().x + ((it->getTime().asSeconds() - this->_gevent.getGameClock().getElapsedTime().asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * it->getDirection().x,
-			gscreen->getCursor().getPosition().y + ((it->getTime().asSeconds() - this->_gevent.getGameClock().getElapsedTime().asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().y / (2.f * MAX_TIMING_VIEW))) * it->getDirection().y));
+			gscreen->getCursor().getPosition().x + ((it->getTime().asSeconds() - game_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * it->getDirection().x,
+			gscreen->getCursor().getPosition().y + ((it->getTime().asSeconds() - game_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().y / (2.f * MAX_TIMING_VIEW))) * it->getDirection().y));
 		tmp[1]->setPosition(tmp[0]->getPosition());
 
 		if (it->getDuration() > 0.f)
@@ -224,9 +294,9 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 			sf::Color	playing(it->getBaseColor());
 
 			//If the long note reach the cursor
-			if (it->getTime().asSeconds() - this->_gevent.getGameClock().getElapsedTime().asSeconds() <= 0.f)
+			if (it->getTime().asSeconds() - game_elapsed.asSeconds() <= 0.f)
 			{
-				it->scaleDuration(this->_gevent.getGameClock().getElapsedTime());
+				it->scaleDuration(game_elapsed);
 				it->scaleLongNote(gscreen->getSpeed());
 				tmp[0]->setPosition(sf::Vector2f(
 					gscreen->getCursor().getPosition().x,
@@ -259,9 +329,9 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 	switch (event.type)
 	{
 	case sf::Event::KeyPressed:
-		if (this->_gevent.getNextNotes().size() > 0)
+		if (next_notes.size() > 0)
 		{
-			std::vector<Note *>	same_timing = gscreen->getNotesWithSameTiming(this->_gevent.getNextNotes()[0]->getTime(), this->_gevent.getNextNotes()[0]->getLength());
+			std::vector<Note *>	same_timing = gscreen->getNotesWithSameTiming(next_notes[0]->getTime(), next_notes[0]->getLength());
 
 			for (auto it : same_timing)
 			{
@@ -271,13 +341,13 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 				sf::Clock		delay;
 
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && direction.y == -1)
-					delta_accuracy = note_time - this->_gevent.getGameClock().getElapsedTime();
+					delta_accuracy = note_time - game_elapsed;
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
-					delta_accuracy = note_time - this->_gevent.getGameClock().getElapsedTime();
+					delta_accuracy = note_time - game_elapsed;
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
-					delta_accuracy = note_time - this->_gevent.getGameClock().getElapsedTime();
+					delta_accuracy = note_time - game_elapsed;
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
-					delta_accuracy = note_time - this->_gevent.getGameClock().getElapsedTime();
+					delta_accuracy = note_time - game_elapsed;
 
 				if (delta_accuracy > sf::milliseconds(this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].x) &&
 					delta_accuracy < sf::milliseconds(this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].y))
@@ -297,40 +367,9 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 			}
 		}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || sf::Keyboard::isKeyPressed(sf::Keyboard::RControl))
-		{
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::F3))
-			{
-				gscreen->addSpeed(-1);
-				for (auto it : this->_gevent.getNextNotes())
-					if (it->getDuration() > 0.f)
-						it->scaleLongNote(gscreen->getSpeed());
-			}
-
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::F4))
-			{
-				gscreen->addSpeed(1);
-				for (auto it : this->_gevent.getNextNotes())
-					if (it->getDuration() > 0.f)
-						it->scaleLongNote(gscreen->getSpeed());
-			}
-
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
-			{
-				gscreen->restart();
-				this->_gevent.restart();
-			}
-		}
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-			return (this->changeScreen(eGamestate::MENU, gscreen));
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
-			std::cout << "T1 : " << this->_gevent.getGameClock().getElapsedTime().asSeconds() << std::endl;
-
 		break;
 	case sf::Event::KeyReleased:
-		for (auto it : this->_gevent.getNextNotes())
+		for (auto it : next_notes)
 		{
 			if (it->getDuration() >= 0.f && it->isHeld())
 			{
@@ -341,18 +380,18 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 				eAccuracy		accuracy;
 
 				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && direction.y == -1)
-					delta_accuracy = note_length - this->_gevent.getGameClock().getElapsedTime();
+					delta_accuracy = note_length - game_elapsed;
 				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
-					delta_accuracy = note_length - this->_gevent.getGameClock().getElapsedTime();
+					delta_accuracy = note_length - game_elapsed;
 				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
-					delta_accuracy = note_length - this->_gevent.getGameClock().getElapsedTime();
+					delta_accuracy = note_length - game_elapsed;
 				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
-					delta_accuracy = note_length - this->_gevent.getGameClock().getElapsedTime();
+					delta_accuracy = note_length - game_elapsed;
 
 				if (delta_accuracy < sf::seconds(this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].y))
 				{
 					std::cout << "Note length = " << note_length.asSeconds() << std::endl;
-					std::cout << "Time elapsed = " << this->_gevent.getGameClock().getElapsedTime().asSeconds() << std::endl;
+					std::cout << "Time elapsed = " << game_elapsed.asSeconds() << std::endl;
 					std::cout << "Delta accuracy released : " << delta_accuracy.asMilliseconds() - delay.getElapsedTime().asMilliseconds() << std::endl;
 
 					if (!it->hasBeenHeld())
@@ -377,9 +416,9 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 	}
 
 	//If the note hit the death bar and hasn't been played, delete it and set accuracy depending on short or long note (held or not)
-	for (auto it = this->_gevent.getNextNotes().begin(); it != this->_gevent.getNextNotes().end();)
+	for (auto it = next_notes.begin(); it != next_notes.end();)
 	{
-		if ((*it)->getTime().asMilliseconds() - this->_gevent.getGameClock().getElapsedTime().asMilliseconds() < this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].x)
+		if ((*it)->getTime().asMilliseconds() - game_elapsed.asMilliseconds() < this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].x)
 		{
 			//A long not that reach the death bar always has its duration set to 0.
 			if ((*it)->getDuration() == 0.f)
@@ -411,7 +450,8 @@ void	DefenseEvent::draw(IScreen& screen)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 
-	//WTF no draw ??!!
+	for (auto it : gscreen->getCross())
+		gscreen->draw(it);
 }
 
 
@@ -517,6 +557,13 @@ int		IEvent::toggleBoundingBoxes(int index)
 	else
 		std::cout << "Hiding bounding boxes" << std::endl;
 	return (index);
+}
+
+
+void	GameEvent::restart()
+{
+	this->_next_notes.clear();
+	this->_game_clock.restart();
 }
 
 

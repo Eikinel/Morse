@@ -13,6 +13,7 @@ enum	eSkinComponent
 	SK_LN_OUTLINE,
 	SK_LN_OUTLINE_END,
 	SK_CURSOR,
+	SK_ARROW,
 	SK_MISS,
 	SK_BAD,
 	SK_GOOD,

@@ -20,7 +20,7 @@ int		main()
 	// On exit request, delete all screens properly
 	for (auto it : all_screens)
 	{
-		std::cout << "Delete screen n°" << it->getIndex() << " : " << std::endl;
+		std::cout << "Delete screen n." << it->getIndex() << " : " << std::endl;
 		delete(it);
 	}
 	return (status);

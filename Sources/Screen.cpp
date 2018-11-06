@@ -3,6 +3,8 @@
 #include "Button.h"
 #include "Skin.h"
 #include "Phase.h"
+#include "Note.h"
+#include "Bezier.h"
 
 
 //CONSTRUCTORS
@@ -55,7 +57,7 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	std::cout << std::endl << "Creating game screen" << std::endl;
 	this->_events.push_back(new WindowDefaultEvent); // Event handler for options, close window, etc.
 	this->_events.push_back(new GameEvent); // Update game, draw it and react in terms of user inputs.
-	this->_window.setKeyRepeatEnabled(false);
+	//this->_window.setKeyRepeatEnabled(false);
 
 	sf::Vector2f		win_size(window.getSize());
 	sf::VertexArray		va_tmp(sf::LinesStrip, 2);
@@ -73,12 +75,23 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	this->_accuracy_ratio[eAccuracy::ACC_BAD] = 0.3334f;
 	this->_accuracy_ratio[eAccuracy::ACC_GOOD] = 0.6667f;
 	this->_accuracy_ratio[eAccuracy::ACC_GREAT] = 1.f;
+
 	this->_skin = new Skin();
+	
 	this->_cursor.setTexture(this->_skin->getComponent(eSkinComponent::SK_CURSOR));
 	this->_cursor.setOrigin(sf::Vector2f(
 		this->_cursor.getGlobalBounds().width / 2.f,
 		this->_cursor.getGlobalBounds().height / 2.f));
 	this->_cursor.setPosition(sf::Vector2f(win_size.x / 2.f, win_size.y / 2.f));
+
+	this->_arrow.setTexture(this->_skin->getComponent(eSkinComponent::SK_ARROW));
+	this->_arrow.setOrigin(sf::Vector2f(
+		this->_arrow.getGlobalBounds().width / 2.f,
+		this->_arrow.getGlobalBounds().height / 2.f));
+	this->_arrow.setPosition(sf::Vector2f(
+		this->_cursor.getPosition().x + this->_cursor.getGlobalBounds().width / 1.5f,
+		this->_cursor.getPosition().y));
+
 	this->_phase_text.setFont(this->_main_font);
 	this->_phase_text.setCharacterSize(42);
 	this->_phase_text.setPosition(sf::Vector2f(10, win_size.y - 50));
@@ -106,6 +119,8 @@ GameScreen::~GameScreen()
 	delete(this->_skin);
 
 	for (auto it : this->_phases)
+		delete(it);
+	for (auto it : this->_bezier_curves)
 		delete(it);
 	for (auto it : this->_notes)
 		delete(it);
@@ -226,11 +241,6 @@ const std::vector<eAccuracy>&	GameScreen::getNotesPlayed() const
 	return (this->_notes_played);
 }
 
-const std::vector<sf::VertexArray>&	GameScreen::getCross() const
-{
-	return (this->_cross);
-}
-
 const unsigned int	GameScreen::getSpeed() const
 {
 	return (this->_speed);
@@ -259,6 +269,25 @@ const sf::Sprite&	GameScreen::getSpriteAccuracy() const
 const sf::Text&	GameScreen::getPhaseText() const
 {
 	return (this->_phase_text);
+}
+
+
+// Attack phase
+const sf::Sprite&	GameScreen::getArrow() const
+{
+	return (this->_arrow);
+}
+
+const std::vector<Bezier *>&		GameScreen::getBezierCurves() const
+{
+	return (this->_bezier_curves);
+}
+
+
+// Defense phase
+const std::vector<sf::VertexArray>&	GameScreen::getCross() const
+{
+	return (this->_cross);
 }
 
 
@@ -308,6 +337,10 @@ void	GameScreen::addSpeed(const int offset)
 	}
 	else
 		std::cerr << "Can't change speed : floor or ceiling reached" << std::endl;
+
+	for (auto it : this->_notes)
+		if (it->getDuration() > 0.f)
+			it->scaleLongNote(this->_speed);
 }
 
 void	GameScreen::setSpriteAccuracy(const eAccuracy accuracy)
@@ -364,9 +397,9 @@ int		IScreen::run()
 	return (this->_index);
 }
 
-void	IScreen::draw(const sf::Drawable& object)
+void	IScreen::draw(const sf::Drawable& object, sf::RenderStates states)
 {
-	this->_window.draw(object);
+	this->_window.draw(object, states);
 }
 
 int		GameScreen::run()
@@ -386,10 +419,11 @@ int		GameScreen::run()
 
 	// We need to update the window even if the user doesn't do anything.
 	// The game has to continue ;)
+	this->_window.clear();
+
 	if (!user_input)
 		this->_events[1]->update(*this, sf::Event());
 
-	this->_window.clear();
 	for (auto it : this->_events)
 		it->draw(*this);
 	this->_window.display();
@@ -413,66 +447,69 @@ void	GameScreen::restart()
 
 	std::cout << "Restarting game" << std::endl;
 
-	for (auto it = this->_notes.begin(); it != this->_notes.end();)
-	{
-		delete(*it);
-		it = this->_notes.erase(it);
-	}
-
 	for (auto it = this->_phases.begin(); it != this->_phases.end();)
 	{
 		delete(*it);
 		it = this->_phases.erase(it);
 	}
 
+	for (auto it = this->_bezier_curves.begin(); it != this->_bezier_curves.end();)
+	{
+		delete(*it);
+		it = this->_bezier_curves.erase(it);
+	}
+
+	for (auto it = this->_notes.begin(); it != this->_notes.end();)
+	{
+		delete(*it);
+		it = this->_notes.erase(it);
+	}
+
 	this->_user_accuracy = 100.f;
 	this->_current_accuracy = 0.f;
+	this->_arrow.setRotation(0);
 	this->_notes_played.clear();
 
-	this->_phases.push_back(new Phase(ePhase::DEFENSE, sf::seconds(0.f)));
-	//this->_notes.push_back(new Note(sf::seconds(1.f), 0.1f, sf::Vector2i(-1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(2.f), 0.2f, sf::Vector2i(-1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(3.f), 0.5f, sf::Vector2i(-1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(4.f), 1.f, sf::Vector2i(-1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(5.f), 0.1f, sf::Vector2i(0, 1), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(6.f), 0.2f, sf::Vector2i(0, 1), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(7.f), 0.5f, sf::Vector2i(0, 1), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(8.f), 1.f, sf::Vector2i(0, 1), textures, this->_speed));
+	Bezier test({
+		sf::Vector2f(400, 400),
+		sf::Vector2f(200, 200),
+		sf::Vector2f(300, 150),
+		sf::Vector2f(600, 200)});
 
-	this->_phases.push_back(new Phase(ePhase::ATTACK, sf::seconds(9.5f)));
-	this->_notes.push_back(new Note(sf::seconds(9.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(10.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(10.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(11.f), 0.f, sf::Vector2i(-1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(11.5f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(12.f), 10.f, sf::Vector2i(0, -1), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(12.f), 5.f, sf::Vector2i(-1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(12.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(13.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(14.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
-	this->_notes.push_back(new Note(sf::seconds(15.f), 0.f, sf::Vector2i(1, 0), textures, this->_speed));
+	this->_phases.push_back(new Phase(ePhase::ATTACK, sf::seconds(0.f)));
+	this->_notes.push_back(new Note(sf::seconds(1.f), 0.f));
+	this->_notes.push_back(new Note(sf::seconds(2.f), 0.f));
+	this->_notes.push_back(new Note(sf::seconds(3.f), 0.f));
+	this->_notes.push_back(new Note(sf::seconds(4.f), 0.f));
+	this->_notes.push_back(new Note(sf::seconds(5.f), 0.f));
+	this->_notes.push_back(new Note(sf::seconds(6.f), 0.f));
+	this->_notes.push_back(new Note(sf::seconds(7.f), 0.f));
+	this->_notes.push_back(new Note(sf::seconds(8.f), 0.f));
+	this->_bezier_curves.push_back(new Bezier(test));
+
+	/*this->_phases.push_back(new Phase(ePhase::DEFENSE, sf::seconds(9.f)));
+	this->_notes.push_back(new Note(sf::seconds(9.5f), 0.f, sf::Vector2i(1, 0)));
+	this->_notes.push_back(new Note(sf::seconds(10.f), 0.f, sf::Vector2i(-1, 0)));
+	this->_notes.push_back(new Note(sf::seconds(10.5f), 0.f, sf::Vector2i(1, 0)));
+	this->_notes.push_back(new Note(sf::seconds(11.f), 0.f, sf::Vector2i(-1, 0)));
+	this->_notes.push_back(new Note(sf::seconds(11.5f), 0.f, sf::Vector2i(1, 0)));
+	this->_notes.push_back(new Note(sf::seconds(12.f), 10.f, sf::Vector2i(0, -1)));
+	this->_notes.push_back(new Note(sf::seconds(12.f), 5.f, sf::Vector2i(-1, 0)));
+	this->_notes.push_back(new Note(sf::seconds(12.f), 0.f, sf::Vector2i(1, 0)));
+	this->_notes.push_back(new Note(sf::seconds(13.f), 0.f, sf::Vector2i(1, 0)));
+	this->_notes.push_back(new Note(sf::seconds(14.f), 0.f, sf::Vector2i(1, 0)));
+	this->_notes.push_back(new Note(sf::seconds(15.f), 0.f, sf::Vector2i(1, 0)));*/
+
+	for (auto it : this->_notes)
+	{
+		it->setSprites(textures);
+
+		if (it->getDuration() > 0.f)
+			it->scaleLongNote(this->_speed);
+	}
+
 	this->_notes_size = this->_notes.size();
 	this->_sprite_accuracy = sf::Sprite();
-}
 
-std::vector<sf::Vector2f> calcBezier(const sf::Vector2f &start, const sf::Vector2f &end,
-	const sf::Vector2f &start_control, const sf::Vector2f &end_control, const size_t num_segments)
-{
-	std::vector<sf::Vector2f> ret;
-
-	if (!num_segments) // Any points at all?
-		return ret;
-
-	ret.push_back(start); // First point is fixed
-
-	float p = 1.f / num_segments;
-	float q = p;
-	for (size_t i = 1; i < num_segments; i++, p += q) // Generate all between
-		ret.push_back(p * p * p * (end + 3.f * (start_control - end_control) - start) +
-			3.f * p * p * (start - 2.f * start_control + end_control) +
-			3.f * p * (start_control - start) + start);
-
-	ret.push_back(end); // Last point is fixed
-
-	return ret;
+	std::cout << "END OF RESTART" << std::endl << std::endl;
 }

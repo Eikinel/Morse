@@ -7,7 +7,7 @@ Skin::Skin(std::string path)
 	{ 
 		"note.png", "note_outline.png",
 		"ln_begin.png", "ln.png", "ln_end.png", "ln_outline_begin.png", "ln_outline.png", "ln_outline_end.png",
-		"cursor.png",
+		"cursor.png", "arrow.png",
 		"miss.png", "bad.png", "good.png", "great.png"
 	};
 
