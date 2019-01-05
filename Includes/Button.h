@@ -32,11 +32,13 @@ public:
 	void	setEvent(const std::function<int()> event);
 
 	//METHODS
-	template <typename U, typename... T> void onClick(int (U::*func)(int, T...), U* event, int index, T... params)
+	template <typename U, typename... T>
+	void onClick(int (U::*func)(int, T...), U* event, int index, T... params)
 	{
 		this->_event = std::bind(func, event, index, params...);
 	}
-	template <typename U, typename... T> void onClick(int (U::*func)(eGamestate, T...), U* event, eGamestate gamestate, T... params)
+	template <typename U, typename... T>
+	void onClick(int (U::*func)(eGamestate, T...), U* event, eGamestate gamestate, T... params)
 	{
 		this->_event = std::bind(func, event, gamestate, params...);
 	}

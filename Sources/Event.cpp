@@ -9,6 +9,9 @@
 #include <iomanip>
 #include <sstream>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 //CONSTRUCTORS
 IEvent::IEvent()
 {
@@ -47,8 +50,9 @@ AttackEvent::AttackEvent(GameEvent& gevent) : _gevent(gevent)
 {
 	std::cout << "Creating AttackEvent" << std::endl;
 
-	this->_power = 1.f;
-	this->_accelerator = 5.f;
+	this->_arrow_angle = 0.f;
+	this->_arrow_trans = sf::Transform();
+	this->_pos_curve = sf::Transform();
 }
 
 DefenseEvent::DefenseEvent(GameEvent& gevent) : _gevent(gevent)
@@ -140,8 +144,7 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 	int			status = screen.getIndex();
-	
-	this->_current_phase = gscreen->getPhaseByTime(this->_game_clock.getElapsedTime());
+
 	this->_next_notes = gscreen->getNextNotes(this->_game_clock.getElapsedTime());
 
 	switch (event.type)
@@ -171,6 +174,8 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 		break;
 	}
 
+	this->_current_phase = gscreen->getPhaseByTime(this->_game_clock.getElapsedTime());
+
 	if (this->_current_phase != NULL)
 	{
 		gscreen->setPhaseText(this->_current_phase->getName());
@@ -185,9 +190,9 @@ void	GameEvent::draw(IScreen& screen)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 
-	/*for (auto it : this->_next_notes)
+	for (auto it : this->_next_notes)
 		for (auto it2 : it->getSprites())
-			gscreen->draw(*it2);*/
+			gscreen->draw(*it2);
 
 	gscreen->draw(gscreen->getCursor());
 	gscreen->draw(gscreen->getFPSText());
@@ -215,46 +220,47 @@ auto	GameEvent::removeNote(const Note& note)
 int		AttackEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
-	sf::Sprite	arrow = gscreen->getArrow();
-	const std::vector<Note *>&	next_notes = this->_gevent.getNextNotes();
 	const sf::Time& game_elapsed = this->_gevent.getGameClock().getElapsedTime();
+	const std::vector<Note *>& next_notes = this->_gevent.getNextNotes();
+	const std::vector<Bezier *> curves = gscreen->getBezierCurves();
+
+	// Mouse events
+	const sf::RenderWindow& window = gscreen->getWindow();
+	const sf::Vector2f& cursor_pos = gscreen->getCursor().getPosition();
+	sf::Vector2i mouse_pos = sf::Vector2i();
+	sf::Vector2f vmouse = sf::Vector2f();
+	float old_angle = this->_arrow_angle;
+
+	for (auto it : curves)
+	{
+		const sf::VertexArray curve = it->getBezierCurve();
+
+
+	}
+
+	this->_pos_curve = sf::Transform();
 
 	// Give notes a position
 	for (auto it : next_notes)
 	{
 		const std::vector<sf::Sprite *>	tmp = it->getSprites();
 	}
+	
+	// Set arrow rotation depending on the mouse position
+	mouse_pos = sf::Mouse::getPosition(window);
+	vmouse = sf::Vector2f(
+		mouse_pos.x - cursor_pos.x,
+		mouse_pos.y - cursor_pos.y);
 
-	const std::vector<Bezier *> curves = gscreen->getBezierCurves();
-
-	for (auto it : curves)
-	{
-		const sf::VertexArray curve = it->getBezierCurve();
-
-			//gscreen->getCursor().getPosition().x + ((game_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * curve[1].position.x - curve[0].position.x,
-			//gscreen->getCursor().getPosition().x + ((game_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * curve[1].position.y - curve[0].position.y));
-	}
-
-
-	//Check user action
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-		this->_is_accelerated = true;
-	else
-		this->_is_accelerated = false;
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-	{
-		float	arrow_direction = 0.f;
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-			arrow_direction = -1.f;
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-			arrow_direction = 1.f;
-
-		this->_rot_arrow.rotate(
-			arrow_direction * this->_power * (this->_is_accelerated ? this->_accelerator : 1),
-			gscreen->getCursor().getPosition());
-	}
+	// Dot product of two vectors : from cursor to mouse and arrow direction
+	// Replace the arrow at origin direction
+	// atan2 use dot product and determinant. atan2(dot, det);
+	// Considering sf::Vector2f origin = sf::Vector2f(1, 0); we have :
+	// dot = vmouse.x * origin.x + vmouse.y * origin.y = vmouse.x * 1 + vmouse.y * 0 = vmouse.x
+	// det = vmouse.x * origin.y - vmouse.y * origin.x = vmouse.x * 0 - vmouse.y * 1 = -vmouse.y
+	this->_arrow_trans = sf::Transform();
+	this->_arrow_angle = 180 / M_PI * atan2(-vmouse.y, vmouse.x) * -1;
+	this->_arrow_trans.rotate(this->_arrow_angle, cursor_pos);
 
 	return (screen.getIndex());
 }
@@ -263,13 +269,27 @@ void	AttackEvent::draw(IScreen& screen)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 
-	sf::CircleShape circle(5.f);
-	circle.setFillColor(sf::Color(255, 0, 0));
+	sf::CircleShape circle(2.f);
 
-	for (auto curve : gscreen->getBezierCurves())
+	for (auto curve : gscreen->getBezierCurves()) {
 		gscreen->draw(curve->getBezierCurve(), this->_pos_curve);
 
-	gscreen->draw(gscreen->getArrow(), this->_rot_arrow);
+		// Debug purpose
+		circle.setFillColor(sf::Color(255, 0, 0));
+		for (auto anchor : curve->getAnchorPoints()) {
+			circle.setPosition(anchor);
+			gscreen->draw(circle);
+		}
+
+		circle.setFillColor(sf::Color(0, 0, 255));
+		for (auto control : curve->getControlPoints()) {
+			circle.setPosition(control);
+			gscreen->draw(circle);
+		}
+	}
+
+	gscreen->draw(gscreen->getArrowRadiusShape());
+	gscreen->draw(gscreen->getArrow(), this->_arrow_trans);
 }
 
 

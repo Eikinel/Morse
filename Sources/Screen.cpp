@@ -62,6 +62,26 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	sf::Vector2f		win_size(window.getSize());
 	sf::VertexArray		va_tmp(sf::LinesStrip, 2);
 
+	// Common components
+	this->_speed = 10;
+	this->_accuracy_ratio[eAccuracy::ACC_MISS] = 0.f;
+	this->_accuracy_ratio[eAccuracy::ACC_BAD] = 0.3334f;
+	this->_accuracy_ratio[eAccuracy::ACC_GOOD] = 0.6667f;
+	this->_accuracy_ratio[eAccuracy::ACC_GREAT] = 1.f;
+
+	this->_skin = new Skin();
+
+	this->_cursor.setTexture(this->_skin->getComponent(eSkinComponent::SK_CURSOR));
+	this->_cursor.setOrigin(sf::Vector2f(
+		this->_cursor.getGlobalBounds().width / 2.f,
+		this->_cursor.getGlobalBounds().height / 2.f));
+	this->_cursor.setPosition(win_size / 2.f);
+
+	this->_phase_text.setFont(this->_main_font);
+	this->_phase_text.setCharacterSize(42);
+	this->_phase_text.setPosition(sf::Vector2f(10, win_size.y - 50));
+
+	// Defense phase components
 	va_tmp[0].color = va_tmp[1].color = sf::Color::Green;
 	va_tmp[0].position = sf::Vector2f(win_size.x / 2.f, 0);
 	va_tmp[1].position = sf::Vector2f(win_size.x / 2.f, win_size.y);
@@ -70,31 +90,22 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	va_tmp[1].position = sf::Vector2f(win_size.x, win_size.y / 2.f);
 	this->_cross.push_back(va_tmp);
 
-	this->_speed = 10;
-	this->_accuracy_ratio[eAccuracy::ACC_MISS] = 0.f;
-	this->_accuracy_ratio[eAccuracy::ACC_BAD] = 0.3334f;
-	this->_accuracy_ratio[eAccuracy::ACC_GOOD] = 0.6667f;
-	this->_accuracy_ratio[eAccuracy::ACC_GREAT] = 1.f;
-
-	this->_skin = new Skin();
-	
-	this->_cursor.setTexture(this->_skin->getComponent(eSkinComponent::SK_CURSOR));
-	this->_cursor.setOrigin(sf::Vector2f(
-		this->_cursor.getGlobalBounds().width / 2.f,
-		this->_cursor.getGlobalBounds().height / 2.f));
-	this->_cursor.setPosition(sf::Vector2f(win_size.x / 2.f, win_size.y / 2.f));
-
+	// Attach phase components
 	this->_arrow.setTexture(this->_skin->getComponent(eSkinComponent::SK_ARROW));
-	this->_arrow.setOrigin(sf::Vector2f(
-		this->_arrow.getGlobalBounds().width / 2.f,
-		this->_arrow.getGlobalBounds().height / 2.f));
+	this->_arrow.setOrigin(sf::Vector2f(0, this->_arrow.getGlobalBounds().height / 2.f));
 	this->_arrow.setPosition(sf::Vector2f(
-		this->_cursor.getPosition().x + this->_cursor.getGlobalBounds().width / 1.5f,
+		this->_cursor.getPosition().x,
 		this->_cursor.getPosition().y));
-
-	this->_phase_text.setFont(this->_main_font);
-	this->_phase_text.setCharacterSize(42);
-	this->_phase_text.setPosition(sf::Vector2f(10, win_size.y - 50));
+	
+	this->_arrow_radius_shape = sf::CircleShape();
+	this->_arrow_radius_shape.setRadius(this->_arrow.getGlobalBounds().width);
+	this->_arrow_radius_shape.setOrigin(sf::Vector2f(
+		this->_arrow_radius_shape.getGlobalBounds().width / 2.f,
+		this->_arrow_radius_shape.getGlobalBounds().height / 2.f));
+	this->_arrow_radius_shape.setPosition(this->_cursor.getPosition());
+	this->_arrow_radius_shape.setFillColor(sf::Color::Transparent);
+	this->_arrow_radius_shape.setOutlineThickness(1.f);
+	this->_arrow_radius_shape.setOutlineColor(sf::Color::White);
 
 	this->restart();
 }
@@ -278,7 +289,12 @@ const sf::Sprite&	GameScreen::getArrow() const
 	return (this->_arrow);
 }
 
-const std::vector<Bezier *>&		GameScreen::getBezierCurves() const
+const sf::CircleShape&	GameScreen::getArrowRadiusShape() const
+{
+	return (this->_arrow_radius_shape);
+}
+
+const std::vector<Bezier *>&	GameScreen::getBezierCurves() const
 {
 	return (this->_bezier_curves);
 }
@@ -452,22 +468,24 @@ void	GameScreen::restart()
 		delete(*it);
 		it = this->_phases.erase(it);
 	}
+	this->_phases = std::vector<Phase *>();
 
 	for (auto it = this->_bezier_curves.begin(); it != this->_bezier_curves.end();)
 	{
 		delete(*it);
 		it = this->_bezier_curves.erase(it);
 	}
+	this->_bezier_curves = std::vector<Bezier *>();
 
 	for (auto it = this->_notes.begin(); it != this->_notes.end();)
 	{
 		delete(*it);
 		it = this->_notes.erase(it);
 	}
+	this->_notes = std::vector<Note *>();
 
 	this->_user_accuracy = 100.f;
 	this->_current_accuracy = 0.f;
-	this->_arrow.setRotation(0);
 	this->_notes_played.clear();
 
 	Bezier test({
@@ -487,7 +505,7 @@ void	GameScreen::restart()
 	this->_notes.push_back(new Note(sf::seconds(8.f), 0.f));
 	this->_bezier_curves.push_back(new Bezier(test));
 
-	/*this->_phases.push_back(new Phase(ePhase::DEFENSE, sf::seconds(9.f)));
+	/*this->_phases.push_back(new Phase(ePhase::DEFENSE, sf::seconds(0.f)));
 	this->_notes.push_back(new Note(sf::seconds(9.5f), 0.f, sf::Vector2i(1, 0)));
 	this->_notes.push_back(new Note(sf::seconds(10.f), 0.f, sf::Vector2i(-1, 0)));
 	this->_notes.push_back(new Note(sf::seconds(10.5f), 0.f, sf::Vector2i(1, 0)));

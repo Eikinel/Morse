@@ -94,6 +94,7 @@ public:
 
 	// Attack phase
 	const sf::Sprite&				getArrow() const;
+	const sf::CircleShape&			getArrowRadiusShape() const;
 	const std::vector<Bezier *>&	getBezierCurves() const;
 
 	// Defense phase
@@ -113,21 +114,22 @@ public:
 
 private:
 	// Game phase
-	std::vector<Phase *>			_phases;
-	std::vector<Note *>				_notes; // Map file with all notes will be here
-	unsigned int					_notes_size;
-	std::vector<eAccuracy>			_notes_played;
-	unsigned int					_speed;
-	float							_user_accuracy;
-	float							_current_accuracy;
-	float							_accuracy_ratio[eAccuracy::ACC_SIZE];
-	Skin*							_skin;
-	sf::Sprite						_cursor;
-	sf::Sprite						_sprite_accuracy;
-	sf::Text						_phase_text;
+	std::vector<Phase *>	_phases;
+	std::vector<Note *>		_notes; // Map file with all notes will be here
+	unsigned int			_notes_size;
+	std::vector<eAccuracy>	_notes_played;
+	unsigned int			_speed;
+	float					_user_accuracy;
+	float					_current_accuracy;
+	float					_accuracy_ratio[eAccuracy::ACC_SIZE];
+	Skin*					_skin;
+	sf::Sprite				_cursor;
+	sf::Sprite				_sprite_accuracy;
+	sf::Text				_phase_text;
 
 	// Attack phase
 	sf::Sprite				_arrow;
+	sf::CircleShape			_arrow_radius_shape; // Will be a sprite changeable through the skin component
 	std::vector<Bezier *>	_bezier_curves;
 
 	// Defense phase

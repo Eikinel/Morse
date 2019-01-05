@@ -112,11 +112,9 @@ public:
 
 private:
 	GameEvent&		_gevent;
-	float			_power; // For keyboard players, speed value of the arrow
-	float			_accelerator; // When enabled, increase the strength
-	bool			_is_accelerated;
-	sf::Transform	_rot_arrow; // Transformation to apply to the arrow
-	sf::Transform	_pos_curve;
+	float			_arrow_angle;	// Angle value of the arrow
+	sf::Transform	_arrow_trans;	// Transformation to apply to the arrow
+	sf::Transform	_pos_curve;		// Transformation to apply to the curve (if each curve, maybe use a vector ?)
 };
 
 class				DefenseEvent : public IEvent
