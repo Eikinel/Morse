@@ -20,8 +20,8 @@ public:
 	virtual void	draw(IScreen& screen) = 0;
 
 	//GETTERS
-	virtual bool				getToggleBoundingBoxes();
-	virtual std::vector<bool>&	getToggleOptions();
+	bool				getToggleBoundingBoxes();
+	std::vector<bool>&	getToggleOptions();
 	template <typename T> void	getBoundingBoxes(const Entity<T>& e, std::vector<sf::VertexArray>& boxes)
 	{
 		const sf::Color type[5] = { sf::Color::White, sf::Color::Cyan, sf::Color::Blue, };
@@ -44,12 +44,12 @@ public:
 	}
 
 	//SETTERS
-	virtual	void	setToggleOptions(const std::vector<bool>& toggle_options);
+	void	setToggleOptions(const std::vector<bool>& toggle_options);
 
 	//METHODS
-	virtual int	changeScreen(eGamestate gamestate, IScreen* screen);
-	virtual int	createScreen(eGamestate gamestate, IScreen* screen);
-	virtual int	toggleBoundingBoxes(int index);
+	int	changeScreen(eGamestate gamestate, IScreen* screen);
+	int	createScreen(eGamestate gamestate, IScreen* screen);
+	int	toggleBoundingBoxes(int index);
 
 protected:
 	std::vector<bool>	_toggle_options;
@@ -61,8 +61,8 @@ class				WindowDefaultEvent : public IEvent
 public:
 	WindowDefaultEvent();
 
-	virtual int		update(IScreen& screen, sf::Event& event);
-	virtual void	draw(IScreen& screen) {}
+	int		update(IScreen& screen, sf::Event& event);
+	void	draw(IScreen& screen) {}
 };
 
 class				MenuEvent : public IEvent
@@ -70,24 +70,25 @@ class				MenuEvent : public IEvent
 public:
 	MenuEvent();
 
-	virtual int		update(IScreen& screen, sf::Event& event);
-	virtual void	draw(IScreen& screen);
+	int		update(IScreen& screen, sf::Event& event);
+	void	draw(IScreen& screen);
 };
 
 class				GameEvent : public IEvent
 {
 public:
 	GameEvent();
-	virtual ~GameEvent();
+	~GameEvent();
 
-	virtual int		update(IScreen& screen, sf::Event& event);
-	virtual void	draw(IScreen& screen);
+	int		update(IScreen& screen, sf::Event& event);
+	void	draw(IScreen& screen);
 
 	//GETTERS
 	const sf::Clock&				getGameClock() const;
 	const std::vector<Note *>&		getNextNotes() const;
 	const std::vector<sf::Vector2f>	getTimingGaps() const;
 	const eAccuracy					getAccuracy(const sf::Time& delta) const;
+	const sf::Time&					getSkipFreeze() const;
 
 	//METHODS
 	auto	removeNote(const Note& note);
@@ -95,20 +96,22 @@ public:
 
 private:
 	sf::Clock					_game_clock;
+	sf::Time					_skip_freeze; // Freeze the time when the user skipped the song
 	const Phase*				_current_phase;
 	std::vector<IEvent *>		_phases_events;
 	std::vector<Note *>			_next_notes;
 	std::vector<sf::Vector2f>	_timing_gaps;
+	bool						_metronome_played;
 };
 
 class				AttackEvent : public IEvent
 {
 public:
 	AttackEvent(GameEvent& gevent);
-	virtual ~AttackEvent();
+	~AttackEvent();
 
-	virtual int		update(IScreen& screen, sf::Event& event);
-	virtual void	draw(IScreen& screen);
+	int		update(IScreen& screen, sf::Event& event);
+	void	draw(IScreen& screen);
 
 private:
 	GameEvent&		_gevent;
@@ -121,10 +124,10 @@ class				DefenseEvent : public IEvent
 {
 public:
 	DefenseEvent(GameEvent& gevent);
-	virtual ~DefenseEvent();
+	~DefenseEvent();
 
-	virtual int		update(IScreen& screen, sf::Event& event);
-	virtual void	draw(IScreen& screen);
+	int		update(IScreen& screen, sf::Event& event);
+	void	draw(IScreen& screen);
 
 private:
 	GameEvent&	_gevent;

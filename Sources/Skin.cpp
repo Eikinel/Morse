@@ -3,26 +3,28 @@
 
 Skin::Skin(std::string path)
 {
-	std::string		components[] =
-	{ 
-		"note.png", "note_outline.png",
-		"ln_begin.png", "ln.png", "ln_end.png", "ln_outline_begin.png", "ln_outline.png", "ln_outline_end.png",
-		"cursor.png", "arrow.png",
-		"miss.png", "bad.png", "good.png", "great.png"
+	std::string		sprites_filename[eSkinTexture::SK_SIZE] = {
+		"note", "note_outline",
+		"ln_begin", "ln", "ln_end", "ln_outline_begin", "ln_outline", "ln_outline_end",
+		"cursor", "arrow",
+		"miss", "bad", "good", "great"
+	};
+
+	std::string		hit_sounds_filename[eHitSound::HIT_SOUND_SIZE] = {
+		"bass", "snare", "cowbell", "hi-hat", "crash", "ride", "tom1", "tom2", "tom3", "roll"
 	};
 
 	if (path[path.size() - 1] != '/')
 		path += "/";
-	std::cout << "Creating new skin with path " << path << std::endl;
-	for (unsigned int i = eSkinComponent::SK_NOTE; i < eSkinComponent::SK_SIZE; (int)i++)
-	{
-		sf::Texture*	t_tmp = new sf::Texture();
 
-		std::cout << "Creating new component with path " << path + components[i] << std::endl;
-		if (!t_tmp->loadFromFile(path + components[i]))
-			t_tmp->loadFromFile(SKIN_DIR"/Default/" + components[i]);
-		this->_textures.push_back(t_tmp);
-	}
+	std::cout << "Creating new skin with path " << path << std::endl;
+
+	// Add skin's sprites and hit sounds
+	for (unsigned int i = eSkinTexture::SK_NOTE; i < eSkinTexture::SK_SIZE; i++)
+		this->addComponent(path, sprites_filename[i], eSkinComponent::TEXTURE);
+
+	for (unsigned int i = eHitSound::BASS; i < eHitSound::HIT_SOUND_SIZE; i++)
+		this->addComponent(path, hit_sounds_filename[i], eSkinComponent::HIT_SOUND);
 }
 
 Skin::Skin(const Skin& other)
@@ -40,7 +42,44 @@ Skin::~Skin()
 
 
 //GETTERS
-const sf::Texture&	Skin::getComponent(eSkinComponent index) const
+const sf::Texture&	Skin::getTexture(const eSkinTexture& index) const
 {
 	return (*this->_textures[index]);
+}
+
+const sf::SoundBuffer&	Skin::getHitSound(const eHitSound& index) const
+{
+	return (*this->_hit_sounds[index]);
+}
+
+
+//METHODS
+void	Skin::addComponent(std::string path, const std::string& filename, const eSkinComponent& type)
+{
+	sf::Texture t = sf::Texture();
+	sf::SoundBuffer s = sf::SoundBuffer();
+
+	switch (type)
+	{
+	case eSkinComponent::TEXTURE:
+		std::cout << "Creating new texture with path " << path << std::endl;
+
+		path += SKIN_SPRITE_DIR + '/' + filename + ".png";
+		if (!t.loadFromFile(path))
+			t.loadFromFile(std::string(DEFAULT_SKIN_DIR) + SKIN_SPRITE_DIR + '/' + filename + ".png");
+		this->_textures.push_back(new sf::Texture(t));
+
+		break;
+	case eSkinComponent::HIT_SOUND:
+		std::cout << "Creating new hit sound with path " << path << std::endl;
+
+		path += SKIN_AUDIO_DIR + '/' + filename + ".wav";
+		if (!s.loadFromFile(path))
+			s.loadFromFile(std::string(DEFAULT_SKIN_DIR) + SKIN_AUDIO_DIR + '/' + filename + ".wav");
+		this->_hit_sounds.push_back(new sf::SoundBuffer(s));
+
+		break;
+	default:
+		break;
+	}
 }

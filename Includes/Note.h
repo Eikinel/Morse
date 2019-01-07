@@ -15,9 +15,7 @@ enum			eAccuracy
 class			Note
 {
 public:
-	// CONSTRUCTOR (for attack)
-	//Note(const sf::Time& time, const float duration, const sf::Vector2i& );
-	// CONSTRUCTOR (for defense)
+	// CONSTRUCTOR
 	Note(const sf::Time& time, const float duration, const sf::Vector2i& direction = sf::Vector2i(0, 1));
 	virtual ~Note();
 

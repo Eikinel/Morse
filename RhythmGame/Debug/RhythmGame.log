@@ -1,8 +1,8 @@
 ﻿  Screen.cpp
-d:\documents\projets\morse\sources\screen.cpp(22): warning C4244: 'argument' : conversion de 'float' en 'unsigned int', perte possible de données
-d:\documents\projets\morse\sources\screen.cpp(40): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
-d:\documents\projets\morse\sources\screen.cpp(43): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
-d:\documents\projets\morse\sources\screen.cpp(46): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
-d:\documents\projets\morse\sources\screen.cpp(49): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
+d:\documents\projets\morse\sources\screen.cpp(23): warning C4244: 'argument' : conversion de 'float' en 'unsigned int', perte possible de données
+d:\documents\projets\morse\sources\screen.cpp(41): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
+d:\documents\projets\morse\sources\screen.cpp(44): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
+d:\documents\projets\morse\sources\screen.cpp(47): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
+d:\documents\projets\morse\sources\screen.cpp(50): warning C4244: 'argument' : conversion de 'float' en 'const ::size_t', perte possible de données
   RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.exe
   RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.pdb (Partial PDB)

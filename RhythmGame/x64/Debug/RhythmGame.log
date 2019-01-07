@@ -1,0 +1,15 @@
+﻿  Skin.cpp
+d:\documents\projets\morse\sources\skin.cpp(1): fatal error C1083: Impossible d'ouvrir le fichier include : 'Skin.h' : No such file or directory
+  Screen.cpp
+d:\documents\projets\morse\sources\screen.cpp(1): fatal error C1083: Impossible d'ouvrir le fichier include : 'Screen.h' : No such file or directory
+  Note.cpp
+d:\documents\projets\morse\sources\note.cpp(1): fatal error C1083: Impossible d'ouvrir le fichier include : 'Note.h' : No such file or directory
+  Main.cpp
+d:\documents\projets\morse\sources\main.cpp(1): fatal error C1083: Impossible d'ouvrir le fichier include : 'SFML\Graphics.hpp' : No such file or directory
+  Event.cpp
+d:\documents\projets\morse\sources\event.cpp(1): fatal error C1083: Impossible d'ouvrir le fichier include : 'Event.h' : No such file or directory
+  Button.cpp
+d:\documents\projets\morse\sources\button.cpp(1): fatal error C1083: Impossible d'ouvrir le fichier include : 'Button.h' : No such file or directory
+  Bezier.cpp
+d:\documents\projets\morse\sources\bezier.cpp(1): fatal error C1083: Impossible d'ouvrir le fichier include : 'Bezier.h' : No such file or directory
+  Génération de code en cours...

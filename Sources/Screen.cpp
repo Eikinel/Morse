@@ -5,6 +5,7 @@
 #include "Phase.h"
 #include "Note.h"
 #include "Bezier.h"
+#include "Song.h"
 
 
 //CONSTRUCTORS
@@ -70,8 +71,10 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	this->_accuracy_ratio[eAccuracy::ACC_GREAT] = 1.f;
 
 	this->_skin = new Skin();
+	this->_song = new Song("/Test/Born To Be Bone.ogg", &this->_speed);
+	this->_metronome.setBuffer(this->_skin->getHitSound(eHitSound::COWBELL));
 
-	this->_cursor.setTexture(this->_skin->getComponent(eSkinComponent::SK_CURSOR));
+	this->_cursor.setTexture(this->_skin->getTexture(eSkinTexture::SK_CURSOR));
 	this->_cursor.setOrigin(sf::Vector2f(
 		this->_cursor.getGlobalBounds().width / 2.f,
 		this->_cursor.getGlobalBounds().height / 2.f));
@@ -91,7 +94,7 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	this->_cross.push_back(va_tmp);
 
 	// Attach phase components
-	this->_arrow.setTexture(this->_skin->getComponent(eSkinComponent::SK_ARROW));
+	this->_arrow.setTexture(this->_skin->getTexture(eSkinTexture::SK_ARROW));
 	this->_arrow.setOrigin(sf::Vector2f(0, this->_arrow.getGlobalBounds().height / 2.f));
 	this->_arrow.setPosition(sf::Vector2f(
 		this->_cursor.getPosition().x,
@@ -128,13 +131,7 @@ GameScreen::~GameScreen()
 {
 	std::cout << "Deleting game screen" << std::endl;
 	delete(this->_skin);
-
-	for (auto it : this->_phases)
-		delete(it);
-	for (auto it : this->_bezier_curves)
-		delete(it);
-	for (auto it : this->_notes)
-		delete(it);
+	delete(this->_song);
 }
 
 
@@ -186,71 +183,6 @@ std::vector<Button *>&	MenuScreen::getButtons()
 }
 
 
-const std::vector<Phase *>&	GameScreen::getPhases() const
-{
-	return (this->_phases);
-}
-
-const Phase*	GameScreen::getPhaseByTime(const sf::Time& time) const
-{
-	Phase*	phase = NULL;
-
-	for (auto it : this->_phases)
-	{
-		if (it->getTime() <= time)
-			phase = it;
-		else
-			break;
-	}
-
-	return (phase);
-}
-
-const std::vector<Note *>&	GameScreen::getNotes() const
-{
-	return (this->_notes);
-}
-
-const std::vector<Note *>	GameScreen::getNextNotes(const sf::Time& time) const
-{
-	std::vector<Note *>		next_notes;
-
-	for (auto it : this->_notes)
-	{
-		if ((it->getTime().asSeconds() - time.asSeconds()) < MAX_TIMING_VIEW / this->_speed)
-			next_notes.push_back(it);
-		else
-			break;
-	}
-
-	return (next_notes);
-}
-
-const std::vector<Note *>	GameScreen::getNotesWithSameTiming(const sf::Time& time, const float& length) const
-{
-	std::vector<Note *>		same_timing;
-
-	for (auto it : this->_notes)
-		if (it->getTime().asSeconds() >= time.asSeconds() && it->getTime().asSeconds() <= length)
-			same_timing.push_back(it);
-
-	return (same_timing);
-}
-
-const Note&	GameScreen::getNoteByIndex(unsigned int index) const
-{
-	return (*this->_notes[index]);
-}
-
-const unsigned int	GameScreen::getNotesSize() const
-{
-	return (this->_notes_size);
-}
-
-const std::vector<eAccuracy>&	GameScreen::getNotesPlayed() const
-{
-	return (this->_notes_played);
-}
 
 const unsigned int	GameScreen::getSpeed() const
 {
@@ -267,6 +199,16 @@ const Skin&	GameScreen::getSkin() const
 	return (*this->_skin);
 }
 
+Song&	GameScreen::getSong()
+{
+	return (*this->_song);
+}
+
+const std::vector<eAccuracy>&	GameScreen::getNotesPlayed() const
+{
+	return (this->_notes_played);
+}
+
 const sf::Sprite&	GameScreen::getCursor() const
 {
 	return (this->_cursor);
@@ -277,9 +219,14 @@ const sf::Sprite&	GameScreen::getSpriteAccuracy() const
 	return (this->_sprite_accuracy);
 }
 
-const sf::Text&	GameScreen::getPhaseText() const
+const sf::Text&		GameScreen::getPhaseText() const
 {
 	return (this->_phase_text);
+}
+
+sf::Sound&	GameScreen::getMetronome()
+{
+	return (this->_metronome);
 }
 
 
@@ -292,11 +239,6 @@ const sf::Sprite&	GameScreen::getArrow() const
 const sf::CircleShape&	GameScreen::getArrowRadiusShape() const
 {
 	return (this->_arrow_radius_shape);
-}
-
-const std::vector<Bezier *>&	GameScreen::getBezierCurves() const
-{
-	return (this->_bezier_curves);
 }
 
 
@@ -329,21 +271,6 @@ void	IScreen::setFrameLimiter(const unsigned int frame_limiter)
 	this->_frame_limiter = frame_limiter;
 }
 
-void	GameScreen::removeNote(const Note& note)
-{
-	for (auto it = this->_notes.begin(); it != this->_notes.end(); ++it)
-	{
-		if (**it == note)
-		{
-			delete (*it);
-			this->_notes.erase(it);
-			std::cout << "Note deleted" << std::endl;
-			return;
-		}
-	}
-	std::cerr << "Note not found" << std::endl;
-}
-
 void	GameScreen::addSpeed(const int offset)
 {
 	if (this->_speed + offset > 0 && this->_speed < MAX_SPEED)
@@ -354,14 +281,14 @@ void	GameScreen::addSpeed(const int offset)
 	else
 		std::cerr << "Can't change speed : floor or ceiling reached" << std::endl;
 
-	for (auto it : this->_notes)
+	for (auto it : this->_song->getNotes())
 		if (it->getDuration() > 0.f)
 			it->scaleLongNote(this->_speed);
 }
 
 void	GameScreen::setSpriteAccuracy(const eAccuracy accuracy)
 {
-	this->_sprite_accuracy.setTexture(this->_skin->getComponent((eSkinComponent)(accuracy + eSkinComponent::SK_MISS)));
+	this->_sprite_accuracy.setTexture(this->_skin->getTexture((eSkinTexture)(accuracy + eSkinTexture::SK_MISS)));
 	this->_sprite_accuracy.setOrigin(sf::Vector2f(
 		this->_sprite_accuracy.getGlobalBounds().width / 2.f,
 		this->_sprite_accuracy.getGlobalBounds().height / 2.f));
@@ -452,82 +379,24 @@ void	GameScreen::restart()
 {
 	std::vector<const sf::Texture *>	textures;
 
-	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_NOTE));
-	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_NOTE_OUTLINE));
-	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN_BEGIN));
-	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN_OUTLINE_BEGIN));
-	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN));
-	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN_OUTLINE));
-	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN_END));
-	textures.push_back(&this->_skin->getComponent(eSkinComponent::SK_LN_OUTLINE_END));
+	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_NOTE));
+	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_NOTE_OUTLINE));
+	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN_BEGIN));
+	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN_OUTLINE_BEGIN));
+	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN));
+	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN_OUTLINE));
+	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN_END));
+	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN_OUTLINE_END));
 
 	std::cout << "Restarting game" << std::endl;
-
-	for (auto it = this->_phases.begin(); it != this->_phases.end();)
-	{
-		delete(*it);
-		it = this->_phases.erase(it);
-	}
-	this->_phases = std::vector<Phase *>();
-
-	for (auto it = this->_bezier_curves.begin(); it != this->_bezier_curves.end();)
-	{
-		delete(*it);
-		it = this->_bezier_curves.erase(it);
-	}
-	this->_bezier_curves = std::vector<Bezier *>();
-
-	for (auto it = this->_notes.begin(); it != this->_notes.end();)
-	{
-		delete(*it);
-		it = this->_notes.erase(it);
-	}
-	this->_notes = std::vector<Note *>();
 
 	this->_user_accuracy = 100.f;
 	this->_current_accuracy = 0.f;
 	this->_notes_played.clear();
-
-	Bezier test({
-		sf::Vector2f(400, 400),
-		sf::Vector2f(200, 200),
-		sf::Vector2f(300, 150),
-		sf::Vector2f(600, 200)});
-
-	this->_phases.push_back(new Phase(ePhase::ATTACK, sf::seconds(0.f)));
-	this->_notes.push_back(new Note(sf::seconds(1.f), 0.f));
-	this->_notes.push_back(new Note(sf::seconds(2.f), 0.f));
-	this->_notes.push_back(new Note(sf::seconds(3.f), 0.f));
-	this->_notes.push_back(new Note(sf::seconds(4.f), 0.f));
-	this->_notes.push_back(new Note(sf::seconds(5.f), 0.f));
-	this->_notes.push_back(new Note(sf::seconds(6.f), 0.f));
-	this->_notes.push_back(new Note(sf::seconds(7.f), 0.f));
-	this->_notes.push_back(new Note(sf::seconds(8.f), 0.f));
-	this->_bezier_curves.push_back(new Bezier(test));
-
-	/*this->_phases.push_back(new Phase(ePhase::DEFENSE, sf::seconds(0.f)));
-	this->_notes.push_back(new Note(sf::seconds(9.5f), 0.f, sf::Vector2i(1, 0)));
-	this->_notes.push_back(new Note(sf::seconds(10.f), 0.f, sf::Vector2i(-1, 0)));
-	this->_notes.push_back(new Note(sf::seconds(10.5f), 0.f, sf::Vector2i(1, 0)));
-	this->_notes.push_back(new Note(sf::seconds(11.f), 0.f, sf::Vector2i(-1, 0)));
-	this->_notes.push_back(new Note(sf::seconds(11.5f), 0.f, sf::Vector2i(1, 0)));
-	this->_notes.push_back(new Note(sf::seconds(12.f), 10.f, sf::Vector2i(0, -1)));
-	this->_notes.push_back(new Note(sf::seconds(12.f), 5.f, sf::Vector2i(-1, 0)));
-	this->_notes.push_back(new Note(sf::seconds(12.f), 0.f, sf::Vector2i(1, 0)));
-	this->_notes.push_back(new Note(sf::seconds(13.f), 0.f, sf::Vector2i(1, 0)));
-	this->_notes.push_back(new Note(sf::seconds(14.f), 0.f, sf::Vector2i(1, 0)));
-	this->_notes.push_back(new Note(sf::seconds(15.f), 0.f, sf::Vector2i(1, 0)));*/
-
-	for (auto it : this->_notes)
-	{
-		it->setSprites(textures);
-
-		if (it->getDuration() > 0.f)
-			it->scaleLongNote(this->_speed);
-	}
-
-	this->_notes_size = this->_notes.size();
 	this->_sprite_accuracy = sf::Sprite();
+
+	this->_song->restart(textures);
+	static_cast<GameEvent*>(this->_events[1])->restart();
 
 	std::cout << "END OF RESTART" << std::endl << std::endl;
 }

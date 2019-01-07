@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Constants.h"
+#include <SFML\Audio.hpp>
 
-enum	eSkinComponent
+enum	eSkinTexture
 {
 	SK_NOTE,
 	SK_NOTE_OUTLINE,
@@ -21,17 +22,44 @@ enum	eSkinComponent
 	SK_SIZE
 };
 
+enum	eHitSound
+{
+	BASS,
+	SNARE,
+	COWBELL,
+	HI_HAT,
+	CRASH,
+	RIDE,
+	TOM1,
+	TOM2,
+	TOM3,
+	ROLL,
+	HIT_SOUND_SIZE
+};
+
+enum			eSkinComponent
+{
+	TEXTURE,
+	HIT_SOUND,
+	SKIN_COMPONENT_SIZE
+};
+
 class			Skin
 {
 public:
-	Skin(std::string path = SKIN_DIR"/Default");
+	Skin(std::string path = DEFAULT_SKIN_DIR);
 	Skin(const Skin& other);
 	~Skin();
 
 	//GETTERS
-	const sf::Texture&	getComponent(eSkinComponent index) const;
+	const sf::Texture&		getTexture(const eSkinTexture& index) const;
+	const sf::SoundBuffer&	getHitSound(const eHitSound& index) const;
+
+	//METHODS
+	void	addComponent(std::string path, const std::string& filename, const eSkinComponent& type);
 
 private:
 	//TEXTURES
-	std::vector<sf::Texture *>	_textures;
+	std::vector<sf::Texture *>		_textures;
+	std::vector<sf::SoundBuffer *>	_hit_sounds;
 };

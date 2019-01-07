@@ -6,6 +6,7 @@
 #include "Note.h"
 #include "Phase.h"
 #include "Bezier.h"
+#include "Song.h"
 #include <iomanip>
 #include <sstream>
 
@@ -33,7 +34,6 @@ MenuEvent::MenuEvent()
 GameEvent::GameEvent()
 {
 	std::cout << "Creating game event" << std::endl;
-	this->_game_clock.restart();
 
 	//Convert second to milliseconds for proper timing gaps, then apply calcul
 	float	max_timing_view_ms = MAX_TIMING_VIEW * 1000.f;
@@ -44,6 +44,8 @@ GameEvent::GameEvent()
 
 	this->_phases_events.push_back(new AttackEvent(*this)); // Subevent for the attack phase
 	this->_phases_events.push_back(new DefenseEvent(*this)); // Subevent for the defense phase
+
+	this->_metronome_played = false;
 }
 
 AttackEvent::AttackEvent(GameEvent& gevent) : _gevent(gevent)
@@ -143,9 +145,11 @@ void		MenuEvent::draw(IScreen& screen)
 int		GameEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
+	Song&		song = gscreen->getSong();
 	int			status = screen.getIndex();
-
-	this->_next_notes = gscreen->getNextNotes(this->_game_clock.getElapsedTime());
+	sf::Time	elapsed = this->_game_clock.getElapsedTime() + song.getSongOffsetSkip() - this->_skip_freeze;
+	
+	this->_next_notes = song.getNextNotes(elapsed);
 
 	switch (event.type)
 	{
@@ -165,16 +169,27 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 			}
 		}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 			return (this->changeScreen(eGamestate::MENU, gscreen));
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
-			std::cout << "T1 : " << this->_game_clock.getElapsedTime().asSeconds() << std::endl;
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
+			std::cout << "T1 : " << elapsed.asSeconds() << std::endl;
+
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+			if (song.getNotes().size() > 0) {
+				Note* note = song.getNotes()[0];
+
+				if (note->getTime() - elapsed > sf::seconds(3.f)) {
+					this->_skip_freeze = this->_game_clock.getElapsedTime();
+					song.setSongOffset(note->getTime() - sf::seconds(3.f));
+				}
+			}
+		}
 
 		break;
 	}
 
-	this->_current_phase = gscreen->getPhaseByTime(this->_game_clock.getElapsedTime());
+	this->_current_phase = song.getPhaseByTime(elapsed);
 
 	if (this->_current_phase != NULL)
 	{
@@ -183,6 +198,16 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 		this->_phases_events[this->_current_phase->getType()]->draw(screen);
 	}
 
+	// For test purpose : play a sound as a metronome depending on the BPM
+	if ((int)elapsed.asMilliseconds() % (int)(1 / (song.getBPM() / 60.f) * 1000) <= 20.f) {
+		if (!this->_metronome_played) {
+			gscreen->getMetronome().play();
+			this->_metronome_played = true;
+		}
+	}
+	else
+		this->_metronome_played = false;
+
 	return (status);
 }
 
@@ -190,7 +215,7 @@ void	GameEvent::draw(IScreen& screen)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 
-	for (auto it : this->_next_notes)
+	for (auto it : this->getNextNotes())
 		for (auto it2 : it->getSprites())
 			gscreen->draw(*it2);
 
@@ -220,22 +245,29 @@ auto	GameEvent::removeNote(const Note& note)
 int		AttackEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
-	const sf::Time& game_elapsed = this->_gevent.getGameClock().getElapsedTime();
+	Song& song = gscreen->getSong();
+	const sf::Time game_elapsed = this->_gevent.getGameClock().getElapsedTime() + song.getSongOffsetSkip();
 	const std::vector<Note *>& next_notes = this->_gevent.getNextNotes();
-	const std::vector<Bezier *> curves = gscreen->getBezierCurves();
 
 	// Mouse events
 	const sf::RenderWindow& window = gscreen->getWindow();
 	const sf::Vector2f& cursor_pos = gscreen->getCursor().getPosition();
 	sf::Vector2i mouse_pos = sf::Vector2i();
 	sf::Vector2f vmouse = sf::Vector2f();
-	float old_angle = this->_arrow_angle;
 
-	for (auto it : curves)
+
+	// We should not process each curve everytime
+	// Instead, we need to retrieve drawable curves, depending on the pixel length and speed
+	// Additionaly, it is important to know if any curve exists before drawing notes, because a note cannot exists without a curve
+	for (auto it : song.getBezierCurves())
 	{
 		const sf::VertexArray curve = it->getBezierCurve();
 
+		// Get the vector director of the curve
+		sf::Vector2f vcurve = curve[1].position - curve[0].position;
 
+		// Set curve's position according to time spent and vector
+		
 	}
 
 	this->_pos_curve = sf::Transform();
@@ -246,21 +278,29 @@ int		AttackEvent::update(IScreen& screen, sf::Event& event)
 		const std::vector<sf::Sprite *>	tmp = it->getSprites();
 	}
 	
-	// Set arrow rotation depending on the mouse position
-	mouse_pos = sf::Mouse::getPosition(window);
-	vmouse = sf::Vector2f(
-		mouse_pos.x - cursor_pos.x,
-		mouse_pos.y - cursor_pos.y);
+	switch (event.type)
+	{
+	case sf::Event::MouseMoved:
+		// Set arrow rotation depending on the mouse position
+		mouse_pos = sf::Mouse::getPosition(window);
+		vmouse = sf::Vector2f(
+			mouse_pos.x - cursor_pos.x,
+			mouse_pos.y - cursor_pos.y);
 
-	// Dot product of two vectors : from cursor to mouse and arrow direction
-	// Replace the arrow at origin direction
-	// atan2 use dot product and determinant. atan2(dot, det);
-	// Considering sf::Vector2f origin = sf::Vector2f(1, 0); we have :
-	// dot = vmouse.x * origin.x + vmouse.y * origin.y = vmouse.x * 1 + vmouse.y * 0 = vmouse.x
-	// det = vmouse.x * origin.y - vmouse.y * origin.x = vmouse.x * 0 - vmouse.y * 1 = -vmouse.y
-	this->_arrow_trans = sf::Transform();
-	this->_arrow_angle = 180 / M_PI * atan2(-vmouse.y, vmouse.x) * -1;
-	this->_arrow_trans.rotate(this->_arrow_angle, cursor_pos);
+		// Dot product of two vectors : from cursor to mouse and arrow direction
+		// Replace the arrow at origin direction
+		// atan2 use dot product and determinant. atan2(dot, det);
+		// Considering sf::Vector2f origin = sf::Vector2f(1, 0); we have :
+		// dot = vmouse.x * origin.x + vmouse.y * origin.y = vmouse.x * 1 + vmouse.y * 0 = vmouse.x
+		// det = vmouse.x * origin.y - vmouse.y * origin.x = vmouse.x * 0 - vmouse.y * 1 = -vmouse.y
+		this->_arrow_trans = sf::Transform();
+		this->_arrow_angle = 180 / M_PI * atan2(-vmouse.y, vmouse.x) * -1;
+		this->_arrow_trans.rotate(this->_arrow_angle, cursor_pos);
+
+		break;
+	default:
+		break;
+	}
 
 	return (screen.getIndex());
 }
@@ -271,7 +311,7 @@ void	AttackEvent::draw(IScreen& screen)
 
 	sf::CircleShape circle(2.f);
 
-	for (auto curve : gscreen->getBezierCurves()) {
+	for (auto curve : gscreen->getSong().getBezierCurves()) {
 		gscreen->draw(curve->getBezierCurve(), this->_pos_curve);
 
 		// Debug purpose
@@ -296,8 +336,9 @@ void	AttackEvent::draw(IScreen& screen)
 int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
+	Song& song = gscreen->getSong();
 	const std::vector<Note *>&	next_notes = this->_gevent.getNextNotes();
-	const sf::Time& game_elapsed = this->_gevent.getGameClock().getElapsedTime();
+	const sf::Time game_elapsed = this->_gevent.getGameClock().getElapsedTime() + song.getSongOffsetSkip() - this->_gevent.getSkipFreeze();
 
 	// Give notes a position
 	for (auto it : next_notes)
@@ -351,7 +392,7 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 	case sf::Event::KeyPressed:
 		if (next_notes.size() > 0)
 		{
-			std::vector<Note *>	same_timing = gscreen->getNotesWithSameTiming(next_notes[0]->getTime(), next_notes[0]->getLength());
+			std::vector<Note *>	same_timing = song.getNotesWithSameTiming(next_notes[0]->getTime(), next_notes[0]->getLength());
 
 			for (auto it : same_timing)
 			{
@@ -378,7 +419,7 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 
 					if (it->getDuration() == 0.f)
 					{
-						gscreen->removeNote(*it);
+						song.removeNote(*it);
 						gscreen->addAccuracy(accuracy);
 					}
 					else
@@ -453,7 +494,7 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 					else
 						gscreen->addAccuracy(eAccuracy::ACC_MISS);
 				}
-				gscreen->removeNote(**it);
+				song.removeNote(**it);
 				it = this->_gevent.removeNote(**it);
 			}
 			else
@@ -512,6 +553,11 @@ const eAccuracy	GameEvent::getAccuracy(const sf::Time& delta) const
 		accuracy--;
 	}
 	return (eAccuracy::ACC_MISS);
+}
+
+const sf::Time&	GameEvent::getSkipFreeze() const
+{
+	return (this->_skip_freeze);
 }
 
 
