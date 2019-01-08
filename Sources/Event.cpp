@@ -630,6 +630,7 @@ void	GameEvent::restart()
 {
 	this->_next_notes.clear();
 	this->_game_clock.restart();
+	this->_skip_freeze = sf::Time::Zero;
 }
 
 

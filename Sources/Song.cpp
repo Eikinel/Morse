@@ -12,7 +12,7 @@ Song::Song(const std::string& file, unsigned int* speed)
 
 	this->_bpm = 139.f;
 	this->_speed = speed;
-	this->_song_offset_skip = sf::Time();
+	this->_song_offset_skip = sf::Time::Zero;
 	if (!this->_music.openFromFile(SONG_DIR + file))
 		std::cerr << "Can't open file with path : " << file << std::endl;
 	
@@ -212,5 +212,5 @@ void	Song::restart(std::vector<const sf::Texture *>& textures)
 	}
 
 	this->_music.play();
-	this->setSongOffset(sf::Time());
+	this->setSongOffset(sf::Time::Zero);
 }
