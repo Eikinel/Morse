@@ -1,17 +1,17 @@
 #include "Note.h"
 #include "Entity.h"
 
-Note::Note(const sf::Time& time, const float duration, const sf::Vector2i& direction)
+Note::Note(const sf::Time& timing, const float duration, const sf::Vector2i& direction)
 {
-	if (time.asSeconds() >= 0.f && duration >= 0.f && direction.x != direction.y && direction.x != -direction.y)
+	if (timing.asSeconds() >= 0.f && duration >= 0.f && direction.x != direction.y && direction.x != -direction.y)
 	{
-		std::cout << "Setting note with timing " << time.asSeconds() << ", " <<
+		std::cout << "Setting note with timing " << timing.asSeconds() << ", " <<
 			"duration " << duration << " " <<
 			"and direction [" << direction.x << " ; " << direction.y << "]" << std::endl;
 
-		this->_time = time;
+		this->_timing = timing;
 		this->_duration = duration;
-		this->_length = this->_time.asSeconds() + this->_duration;
+		this->_length = this->_timing.asSeconds() + this->_duration;
 		this->_direction = direction;
 		this->_is_held = false;
 		this->_has_been_held = false;
@@ -20,7 +20,7 @@ Note::Note(const sf::Time& time, const float duration, const sf::Vector2i& direc
 	else
 	{
 		std::cerr << "Error while setting note. Values are { " <<
-			"time : " << time.asSeconds() << ", " <<
+			"time : " << timing.asSeconds() << ", " <<
 			"duration : " << duration << ", " <<
 			"direction : [" << direction.x << " ; " << direction.y << "]" <<
 			" }." << std::endl;
@@ -37,9 +37,9 @@ Note::~Note()
 
 
 //GETTERS
-const sf::Time&	Note::getTime() const
+const sf::Time&	Note::getTiming() const
 {
-	return (this->_time);
+	return (this->_timing);
 }
 
 const float	Note::getDuration() const
@@ -144,7 +144,7 @@ void	Note::setBeenHeld(const bool been_held)
 //OPERATOR
 bool	Note::operator==(const Note& note)
 {
-	if (this->_time == note._time &&
+	if (this->_timing == note._timing &&
 		this->_duration == note._duration &&
 		this->_direction == note._direction)
 		return (true);

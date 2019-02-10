@@ -16,11 +16,11 @@ class			Note
 {
 public:
 	// CONSTRUCTOR
-	Note(const sf::Time& time, const float duration, const sf::Vector2i& direction = sf::Vector2i(0, 1));
+	Note(const sf::Time& timing, const float duration, const sf::Vector2i& direction = sf::Vector2i(0, 1));
 	virtual ~Note();
 
 	//GETTERS
-	const sf::Time&						getTime() const;
+	const sf::Time&						getTiming() const;
 	const float							getDuration() const;
 	const sf::Vector2i&					getDirection() const;
 	const std::vector<sf::Sprite *>&	getSprites() const;
@@ -42,7 +42,7 @@ public:
 	bool	operator==(const Note& note);
 
 protected:
-	sf::Time					_time;
+	sf::Time					_timing;
 	float						_duration; // 0.f = short note
 	sf::Vector2i				_direction;
 	std::vector<sf::Sprite *>	_sprites;

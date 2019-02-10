@@ -74,7 +74,7 @@ const std::vector<std::shared_ptr<Note>>	Song::getNextNotes(const sf::Time& time
 
 	for (auto& it : this->_notes)
 	{
-		if ((it->getTime().asSeconds() - time.asSeconds()) < MAX_TIMING_VIEW / this->_speed)
+		if ((it->getTiming().asSeconds() - time.asSeconds()) < MAX_TIMING_VIEW / this->_speed)
 			next_notes.emplace_back(it);
 		else
 			break;
@@ -88,7 +88,7 @@ const std::vector<std::shared_ptr<Note>>	Song::getNotesWithSameTiming(const sf::
 	std::vector<std::shared_ptr<Note>>	same_timing;
 
 	for (auto it : this->_notes)
-		if (it->getTime().asSeconds() >= time.asSeconds() && it->getTime().asSeconds() <= length)
+		if (it->getTiming().asSeconds() >= time.asSeconds() && it->getTiming().asSeconds() <= length)
 			same_timing.emplace_back(it);
 
 	return (same_timing);
@@ -172,17 +172,18 @@ void	Song::restart(std::vector<const sf::Texture *>& textures)
 		sf::Vector2f(0, 0),
 		sf::Vector2f(-200, -200),
 		sf::Vector2f(-100, -350),
-		sf::Vector2f(200, -200)},
-		2.f);
+		sf::Vector2f(200, -200) },
+		2.f,
+		this->_bpm);
 
-	/*this->_phases.push_back(new Phase(ePhase::ATTACK, sf::seconds(0.f)));
+	this->_phases.push_back(new Phase(ePhase::ATTACK, sf::seconds(0.f)));
 	this->_notes.push_back(std::make_shared<Note>(sf::seconds(3.f), 0.f));
-	this->_notes.push_back(std::make_shared<Note>(sf::seconds(4.f), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(3.5f), 0.f));
 	this->_notes.push_back(std::make_shared<Note>(sf::seconds(5.f), 0.f));
 	this->_notes.push_back(std::make_shared<Note>(sf::seconds(6.f), 0.f));
 	this->_notes.push_back(std::make_shared<Note>(sf::seconds(7.f), 0.f));
 	this->_notes.push_back(std::make_shared<Note>(sf::seconds(8.f), 0.f));
-	this->_bezier_curves.emplace_back(new Bezier(test));*/
+	this->_bezier_curves.emplace_back(new Bezier(test));
 
 	this->_phases.push_back(new Phase(ePhase::DEFENSE, sf::seconds(21.f)));
 	this->_notes.push_back(std::make_shared<Note>(sf::seconds(23.1f), 0.f, sf::Vector2i(0, 1)));

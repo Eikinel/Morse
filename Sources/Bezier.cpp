@@ -4,9 +4,10 @@
 Bezier::Bezier(
 	const std::vector<sf::Vector2f>& points,
 	const float& timing,
+	float& bpm,
 	const size_t nbSegments,
 	const sf::Color& color,
-	const bool isClosed)
+	const bool isClosed) : _bpm(bpm)
 {
     std::cout << "Construct new Bezier curve" << std::endl;
 
@@ -20,7 +21,7 @@ Bezier::Bezier(
     this->_points = {};
     this->_controlPoints = {};
     this->_anchorPoints = {};
-	this->_length = 0;
+	this->_pixel_length = 0;
 
     // Store user's points
     for (auto point : points)
@@ -39,10 +40,10 @@ Bezier::Bezier(
 	for (size_t i = 1; i < this->_bezierCurve.size(); i++) {
 		sf::Vector2f vec = this->_bezierCurve[i].position - this->_bezierCurve[i - 1].position;
 
-		this->_length += sqrt(pow(vec.x, 2) + pow(vec.y, 2));
+		this->_pixel_length += sqrt(pow(vec.x, 2) + pow(vec.y, 2));
 	}
 
-	std::cout << "Curve length : " << this->_length << std::endl;
+	std::cout << "Curve length : " << this->_pixel_length << std::endl;
 
     std::cout << "Done !" << std::endl << std::endl;
 }
@@ -78,6 +79,23 @@ const std::vector<sf::Vector2f>&  Bezier::getAnchorPoints() const
     return (this->_anchorPoints);
 }
 
+const sf::Vertex&	Bezier::getPointByTiming(const sf::Time& timing) const
+{
+	// timing = curve->getTiming() + duration * [(n / curve->getMaxVertices()) -> tends to 1]
+	// Therefore n = ((timing - curve->getTiming()) / duration) * curve->getMaxVertices()
+	size_t index = ((timing.asSeconds() - this->_timing.asSeconds()) / this->getDuration()) * this->_nbMaxVertices - (this->_nbMaxVertices - this->_bezierCurve.size());
+
+	if (index < this->_bezierCurve.size())
+		return (this->_bezierCurve[index]);
+
+	return (sf::Vertex());
+}
+
+const sf::Time&	Bezier::getTimingByIndex(const size_t& index) const
+{
+	return (sf::Time());
+}
+
 std::vector<sf::Vertex>&	Bezier::getBezierCurve()
 {
     return (this->_bezierCurve);
@@ -90,7 +108,13 @@ const sf::Time&	Bezier::getTiming() const
 
 const float&	Bezier::getPixelLength() const
 {
-	return (this->_length);
+	return (this->_pixel_length);
+}
+
+const float&	Bezier::getDuration() const
+{
+	// Calcul slider duration according to its pixel length and BPM (BPM can change)
+	return (this->_pixel_length / (PIXEL_PER_SECOND * (this->_bpm / 120.f)));
 }
 
 

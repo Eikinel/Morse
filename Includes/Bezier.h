@@ -8,6 +8,7 @@ public:
     Bezier(
 		const std::vector<sf::Vector2f>& points,
 		const float& timing,
+		float& bpm,
 		const size_t nbSegments = 200,
 		const sf::Color& color = sf::Color::Green,
 		const bool isClosed = false);
@@ -23,9 +24,12 @@ public:
     const std::vector<sf::Vector2f>&    getPoints() const;
     const std::vector<sf::Vector2f>&    getControlPoints() const;
     const std::vector<sf::Vector2f>&    getAnchorPoints() const;
+	const sf::Vertex&					getPointByTiming(const sf::Time& timing) const;
+	const sf::Time&						getTimingByIndex(const size_t& index) const;
     std::vector<sf::Vertex>&			getBezierCurve();
 	const sf::Time&						getTiming() const;
 	const float&						getPixelLength() const;
+	const float&						getDuration() const;
 
     // SETTERS
     void setClose(const bool isClosed);
@@ -62,5 +66,6 @@ private:
     std::vector<sf::Vector2f>   _anchorPoints;
     std::vector<sf::Vertex>		_bezierCurve;
 	sf::Time					_timing;
-	float						_length;
+	float						_pixel_length;
+	float&						_bpm;
 };
