@@ -41,6 +41,7 @@ public:
 	//METHODS
 	virtual int		run();
 	virtual void	draw(const sf::Drawable& object, sf::RenderStates states = sf::RenderStates());
+	virtual void	draw(const sf::Vertex* vertices, size_t vertexCount, sf::PrimitiveType type, const sf::RenderStates states);
 
 protected:
 	sf::RenderWindow&		_window;

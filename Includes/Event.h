@@ -84,24 +84,24 @@ public:
 	void	draw(IScreen& screen);
 
 	//GETTERS
-	const sf::Clock&				getGameClock() const;
-	const std::vector<Note *>&		getNextNotes() const;
-	const std::vector<sf::Vector2f>	getTimingGaps() const;
-	const eAccuracy					getAccuracy(const sf::Time& delta) const;
-	const sf::Time&					getSkipFreeze() const;
+	const sf::Clock&							getGameClock() const;
+	const std::vector<std::shared_ptr<Note>>&	getNextNotes() const;
+	const std::vector<sf::Vector2f>				getTimingGaps() const;
+	const eAccuracy								getAccuracy(const sf::Time& delta) const;
+	const sf::Time&								getSkipFreeze() const;
 
 	//METHODS
 	auto	removeNote(const Note& note);
 	void	restart();
 
 private:
-	sf::Clock					_game_clock;
-	sf::Time					_skip_freeze; // Freeze the time when the user skipped the song
-	const Phase*				_current_phase;
-	std::vector<IEvent *>		_phases_events;
-	std::vector<Note *>			_next_notes;
-	std::vector<sf::Vector2f>	_timing_gaps;
-	bool						_metronome_played;
+	sf::Clock							_game_clock;
+	sf::Time							_skip_freeze; // Freeze the time when the user skipped the song
+	const Phase*						_current_phase;
+	std::vector<IEvent *>				_phases_events;
+	std::vector<std::shared_ptr<Note>>	_next_notes;
+	std::vector<sf::Vector2f>			_timing_gaps;
+	bool								_metronome_played;
 };
 
 class				AttackEvent : public IEvent

@@ -1,9 +1,10 @@
 ﻿  Event.cpp
 d:\documents\projets\morse\includes\collider.h(61): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
 d:\documents\projets\morse\sources\event.cpp(124): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-d:\documents\projets\morse\sources\event.cpp(297): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
-d:\documents\projets\morse\sources\event.cpp(413): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
-d:\documents\projets\morse\sources\event.cpp(414): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
+d:\documents\projets\morse\sources\event.cpp(264): warning C4018: '<' : incompatibilité signed/unsigned
+d:\documents\projets\morse\sources\event.cpp(327): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+d:\documents\projets\morse\sources\event.cpp(446): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
+d:\documents\projets\morse\sources\event.cpp(447): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
 d:\documents\projets\morse\sources\event.cpp(242): warning C4715: 'GameEvent::removeNote' : les chemins de contrôle ne retournent pas tous une valeur
   RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.exe
   RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.pdb (Partial PDB)

@@ -177,7 +177,7 @@ int		GameEvent::update(IScreen& screen, sf::Event& event)
 
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
 			if (song.getNotes().size() > 0) {
-				Note* note = song.getNotes()[0];
+				const std::shared_ptr<Note>& note = song.getNotes()[0];
 
 				if (note->getTime() - elapsed > sf::seconds(3.f)) {
 					this->_skip_freeze = this->_game_clock.getElapsedTime();
@@ -246,8 +246,8 @@ int		AttackEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 	Song& song = gscreen->getSong();
-	const sf::Time game_elapsed = this->_gevent.getGameClock().getElapsedTime() + song.getSongOffsetSkip();
-	const std::vector<Note *>& next_notes = this->_gevent.getNextNotes();
+	const sf::Time game_elapsed = this->_gevent.getGameClock().getElapsedTime() + song.getSongOffsetSkip() - this->_gevent.getSkipFreeze();
+	const std::vector<std::shared_ptr<Note>>& next_notes = this->_gevent.getNextNotes();
 
 	// Mouse events
 	const sf::RenderWindow& window = gscreen->getWindow();
@@ -259,18 +259,47 @@ int		AttackEvent::update(IScreen& screen, sf::Event& event)
 	// We should not process each curve everytime
 	// Instead, we need to retrieve drawable curves, depending on the pixel length and speed
 	// Additionaly, it is important to know if any curve exists before drawing notes, because a note cannot exists without a curve
-	for (auto it : song.getBezierCurves())
+	std::vector<std::unique_ptr<Bezier>>& curves = song.getBezierCurves();
+
+	for (int i = 0; i < curves.size(); i++)
 	{
-		const sf::VertexArray curve = it->getBezierCurve();
+		std::unique_ptr<Bezier>& curve = curves[i];
+		std::vector<sf::Vertex>& points = curve->getBezierCurve();
 
 		// Get the vector director of the curve
-		sf::Vector2f vcurve = curve[1].position - curve[0].position;
+		sf::Vector2f vcurve = points[1].position - points[0].position;
+		sf::Vector2f vcurve_norm = vcurve / (sqrt(pow(vcurve.x, 2) + pow(vcurve.y, 2)));
+		
+		// Calcul slider duration according to its pixel length and BPM
+		float duration = curve->getPixelLength() / (PIXEL_PER_SECOND * (song.getBPM() / 120.f));
+
+		// Get time elapsed until the first point of the curve hit the cursor
+		float curve_elapsed = curve->getTiming().asSeconds() - game_elapsed.asSeconds();
 
 		// Set curve's position according to time spent and vector
-		
-	}
+		const sf::Vector2f curve_position = sf::Vector2f(
+			// Expected position of first point - offset from current point
+			// + (timing until first contact [== 0 if touching cursor] * scale by speed * scale to window and maximum note views) * normalized direction
+			cursor_pos.x - points[0].position.x + ((curve_elapsed > 0 ? curve_elapsed : 0) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * vcurve_norm.x,
+			cursor_pos.y - points[0].position.y + ((curve_elapsed > 0 ? curve_elapsed : 0) * gscreen->getSpeed() * (gscreen->getWindow().getSize().y / (2.f * MAX_TIMING_VIEW))) * vcurve_norm.y);
+		this->_pos_curve = sf::Transform();
+		this->_pos_curve.translate(curve_position);
 
-	this->_pos_curve = sf::Transform();
+		// Erase curve point by point when point reach the center
+		// When points[1] timing is hit, erase points[0]
+		// points[n].timing = curve->getTiming() + duration * [(n / curve->getMaxVertices()) -> tends toward 1]
+		if (points.size() > 2)
+		{
+			if (game_elapsed.asSeconds() >=
+				curve->getTiming().asSeconds() + duration * ((float)(curve->getMaxVertices() - points.size() + 1) / (float)curve->getMaxVertices()))
+			{
+				curve->removeVertex(points.begin());
+			}
+
+			if (points.size() <= 2)
+				song.removeBezierCurve(curves.begin() + i);
+		}
+	}
 
 	// Give notes a position
 	for (auto it : next_notes)
@@ -293,6 +322,7 @@ int		AttackEvent::update(IScreen& screen, sf::Event& event)
 		// Considering sf::Vector2f origin = sf::Vector2f(1, 0); we have :
 		// dot = vmouse.x * origin.x + vmouse.y * origin.y = vmouse.x * 1 + vmouse.y * 0 = vmouse.x
 		// det = vmouse.x * origin.y - vmouse.y * origin.x = vmouse.x * 0 - vmouse.y * 1 = -vmouse.y
+		// Convert from radians to degrees and here we go
 		this->_arrow_trans = sf::Transform();
 		this->_arrow_angle = 180 / M_PI * atan2(-vmouse.y, vmouse.x) * -1;
 		this->_arrow_trans.rotate(this->_arrow_angle, cursor_pos);
@@ -309,23 +339,26 @@ void	AttackEvent::draw(IScreen& screen)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 
-	sf::CircleShape circle(2.f);
+	for (auto& it : gscreen->getSong().getBezierCurves()) {
+		std::vector<sf::Vertex> curve = it->getBezierCurve();
 
-	for (auto curve : gscreen->getSong().getBezierCurves()) {
-		gscreen->draw(curve->getBezierCurve(), this->_pos_curve);
+		gscreen->draw(curve.data(), curve.size(), sf::LinesStrip, this->_pos_curve);
+	}
 
-		// Debug purpose
+	// Debug
+	sf::CircleShape circle(5.f);
+	const sf::Time& elapsed = this->_gevent.getGameClock().getElapsedTime();
+	
+	if (elapsed.asSeconds() >= 2.f) {
+		circle.setFillColor(sf::Color(0, 255, 0));
+		circle.setPosition(sf::Vector2f(30, 60));
+		gscreen->draw(circle);
+	}
+
+	if (elapsed.asSeconds() >= 8.f) {
 		circle.setFillColor(sf::Color(255, 0, 0));
-		for (auto anchor : curve->getAnchorPoints()) {
-			circle.setPosition(anchor);
-			gscreen->draw(circle);
-		}
-
-		circle.setFillColor(sf::Color(0, 0, 255));
-		for (auto control : curve->getControlPoints()) {
-			circle.setPosition(control);
-			gscreen->draw(circle);
-		}
+		circle.setPosition(sf::Vector2f(100, 60));
+		gscreen->draw(circle);
 	}
 
 	gscreen->draw(gscreen->getArrowRadiusShape());
@@ -337,7 +370,7 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 	Song& song = gscreen->getSong();
-	const std::vector<Note *>&	next_notes = this->_gevent.getNextNotes();
+	const std::vector<std::shared_ptr<Note>>&	next_notes = this->_gevent.getNextNotes();
 	const sf::Time game_elapsed = this->_gevent.getGameClock().getElapsedTime() + song.getSongOffsetSkip() - this->_gevent.getSkipFreeze();
 
 	// Give notes a position
@@ -392,7 +425,7 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 	case sf::Event::KeyPressed:
 		if (next_notes.size() > 0)
 		{
-			std::vector<Note *>	same_timing = song.getNotesWithSameTiming(next_notes[0]->getTime(), next_notes[0]->getLength());
+			std::vector<std::shared_ptr<Note>>	same_timing = song.getNotesWithSameTiming(next_notes[0]->getTime(), next_notes[0]->getLength());
 
 			for (auto it : same_timing)
 			{
@@ -477,31 +510,26 @@ int		DefenseEvent::update(IScreen& screen, sf::Event& event)
 	}
 
 	//If the note hit the death bar and hasn't been played, delete it and set accuracy depending on short or long note (held or not)
-	for (auto it = next_notes.begin(); it != next_notes.end();)
+	for (auto& it : next_notes)
 	{
-		if ((*it)->getTime().asMilliseconds() - game_elapsed.asMilliseconds() < this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].x)
+		if (it->getTime().asMilliseconds() - game_elapsed.asMilliseconds() < this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].x)
 		{
 			//A long not that reach the death bar always has its duration set to 0.
-			if ((*it)->getDuration() == 0.f)
+			if (it->getDuration() == 0.f)
 			{
 				//hasBeenHeld is set to "true" if the user played a long note and released the key.
 				//That means if the long note reached the death bar but the user didn't released the key, he will have a "bad".
-				//It also means that short note (that cannot be hold) will always display a "miss" if it reach the death bar.
-				if (!(*it)->hasBeenHeld())
+				//It also means that short notes (that cannot be hold) will always display a "miss" if it reaches the death bar.
+				if (!it->hasBeenHeld())
 				{
-					if ((*it)->isHeld())
+					if (it->isHeld())
 						gscreen->addAccuracy(eAccuracy::ACC_BAD);
 					else
 						gscreen->addAccuracy(eAccuracy::ACC_MISS);
 				}
-				song.removeNote(**it);
-				it = this->_gevent.removeNote(**it);
+				song.removeNote(*it);
 			}
-			else
-				++it;
 		}
-		else
-			++it;
 	}
 
 	return (screen.getIndex());
@@ -532,7 +560,7 @@ const sf::Clock&	GameEvent::getGameClock() const
 	return (this->_game_clock);
 }
 
-const std::vector<Note *>&	GameEvent::getNextNotes() const
+const std::vector<std::shared_ptr<Note>>&	GameEvent::getNextNotes() const
 {
 	return (this->_next_notes);
 }

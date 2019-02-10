@@ -71,7 +71,7 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	this->_accuracy_ratio[eAccuracy::ACC_GREAT] = 1.f;
 
 	this->_skin = new Skin();
-	this->_song = new Song("/Test/Born To Be Bone.ogg", &this->_speed);
+	this->_song = new Song("/Test/Born To Be Bone.ogg", this->_speed);
 	this->_metronome.setBuffer(this->_skin->getHitSound(eHitSound::COWBELL));
 
 	this->_cursor.setTexture(this->_skin->getTexture(eSkinTexture::SK_CURSOR));
@@ -322,6 +322,9 @@ int		IScreen::run()
 	int					status;
 	sf::Event			event;
 
+	this->_window.clear();
+	this->updateFPS();
+	
 	while (this->_window.pollEvent(event))
 	{
 		for (auto it : this->_events)
@@ -331,12 +334,10 @@ int		IScreen::run()
 		}
 	}
 
-	this->_window.clear();
 	for (auto it : this->_events)
 		it->draw(*this);
 	this->_window.display();
 
-	this->updateFPS();
 	return (this->_index);
 }
 
@@ -345,14 +346,25 @@ void	IScreen::draw(const sf::Drawable& object, sf::RenderStates states)
 	this->_window.draw(object, states);
 }
 
+void	IScreen::draw(const sf::Vertex* vertices, size_t vertexCount, sf::PrimitiveType type, const sf::RenderStates states)
+{
+	this->_window.draw(vertices, vertexCount, type, states);
+}
+
 int		GameScreen::run()
 {
 	int				status;
 	sf::Event		event;
-	bool			user_input;
+	bool			user_input = false;
 
-	while (user_input = this->_window.pollEvent(event))
+	// Clear the previous window with old updates and draws
+	this->_window.clear();
+	this->updateFPS();
+	
+	// Process user's event and call each updates
+	while (this->_window.pollEvent(event))
 	{
+		user_input = true;
 		for (auto it : this->_events)
 		{
 			if ((status = it->update(*this, event)) != this->_index)
@@ -360,18 +372,16 @@ int		GameScreen::run()
 		}
 	}
 
-	// We need to update the window even if the user doesn't do anything.
-	// The game has to continue ;)
-	this->_window.clear();
-
+	// Update the game even if the user doesn't do anything
 	if (!user_input)
 		this->_events[1]->update(*this, sf::Event());
 
+	// Draw everything who has been updated
 	for (auto it : this->_events)
 		it->draw(*this);
+
 	this->_window.display();
 
-	this->updateFPS();
 	return (this->_index);
 }
 
