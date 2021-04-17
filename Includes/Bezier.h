@@ -7,11 +7,12 @@ class   Bezier
 public:
     Bezier(
 		const std::vector<sf::Vector2f>& points,
-		const float& timing,
+		const sf::Time& start,
+		const float& duration,
 		float& bpm,
-		const size_t nbSegments = 200,
-		const sf::Color& color = sf::Color::Green,
-		const bool isClosed = false);
+		const sf::Color color = sf::Color::Green,
+		const size_t& nbSegments = 200,
+		const bool& isClosed = false);
     ~Bezier()
     {
         std::cout << "Destruct Bezier" << std::endl;
@@ -24,23 +25,29 @@ public:
     const std::vector<sf::Vector2f>&    getPoints() const;
     const std::vector<sf::Vector2f>&    getControlPoints() const;
     const std::vector<sf::Vector2f>&    getAnchorPoints() const;
-	const sf::Vertex&					getPointByTiming(const sf::Time& timing) const;
+	const sf::Vertex&					getVertexByTiming(const sf::Time& timing) const;
+	const int							getVertexIndexByTiming(const sf::Time& timing) const;
 	const sf::Time&						getTimingByIndex(const size_t& index) const;
     std::vector<sf::Vertex>&			getBezierCurve();
-	const sf::Time&						getTiming() const;
+	const sf::Time&						getStart() const;
+	const sf::Time&						getEnd() const;
 	const float&						getPixelLength() const;
 	const float&						getDuration() const;
+	const sf::Transform&				getTransform() const;
 
     // SETTERS
     void setClose(const bool isClosed);
     void setSegments(const size_t nbSegments);
     void setPointById(const int id, const sf::Vector2f& pos);
-	void setTiming(const float timing);
+	void setStart(const sf::Time& start);
+	void setDuration(const float& end);
+	void setTransform(const sf::Transform& transform);
 
     // METHODS
     void addPoint(const sf::Vector2f& point);
 	void addTiming(const float& offset);
-	void removeVertex(const std::vector<sf::Vertex>::const_iterator it_point);
+	void removeVertex(const std::vector<sf::Vertex>::const_iterator it_points);
+	void removeVertexAt(const size_t& index);
     void updateControlPoints();
     void updateAnchorPoints();
     void updateBezierCurve();
@@ -65,7 +72,9 @@ private:
     std::vector<sf::Vector2f>   _controlPoints;
     std::vector<sf::Vector2f>   _anchorPoints;
     std::vector<sf::Vertex>		_bezierCurve;
-	sf::Time					_timing;
+	sf::Time					_start;
+	float						_duration;
 	float						_pixel_length;
 	float&						_bpm;
+	sf::Transform				_transform;
 };

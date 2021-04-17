@@ -1,18 +1,67 @@
-﻿  Event.cpp
-d:\documents\projets\morse\includes\collider.h(61): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-d:\documents\projets\morse\sources\event.cpp(124): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-d:\documents\projets\morse\sources\event.cpp(264): warning C4018: '<' : incompatibilité signed/unsigned
-d:\documents\projets\morse\sources\event.cpp(337): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
-d:\documents\projets\morse\sources\event.cpp(440): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
-d:\documents\projets\morse\sources\event.cpp(441): warning C4244: 'argument' : conversion de 'const float' en 'sf::Int32', perte possible de données
-  Bezier.cpp
-d:\documents\projets\morse\sources\bezier.cpp(86): warning C4244: 'initialisation' : conversion de 'float' en '::size_t', perte possible de données
-d:\documents\projets\morse\sources\bezier.cpp(175): warning C4018: '<' : incompatibilité signed/unsigned
-d:\documents\projets\morse\sources\bezier.cpp(208): warning C4018: '<' : incompatibilité signed/unsigned
+﻿  Bezier.cpp
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Bezier.cpp(93,26): warning C4018: '<' : incompatibilité signed/unsigned
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Bezier.cpp(209,23): warning C4018: '<' : incompatibilité signed/unsigned
+  Event.cpp
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Bezier.cpp(242,34): warning C4018: '<' : incompatibilité signed/unsigned
+D:\Documents\Projets\Games\Personnel\Morse\Includes\Collider.h(61,44): warning C4244: 'argument' : conversion de 'int' en 'T', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Includes\Collider.h(61,44): warning C4244:         with
+D:\Documents\Projets\Games\Personnel\Morse\Includes\Collider.h(61,44): warning C4244:         [
+D:\Documents\Projets\Games\Personnel\Morse\Includes\Collider.h(61,44): warning C4244:             T=float
+D:\Documents\Projets\Games\Personnel\Morse\Includes\Collider.h(61,44): warning C4244:         ]
+D:\Documents\Projets\Games\Personnel\Morse\Includes\Collider.h(61,37): warning C4244: 'argument' : conversion de 'int' en 'T', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Includes\Collider.h(61,37): warning C4244:         with
+D:\Documents\Projets\Games\Personnel\Morse\Includes\Collider.h(61,37): warning C4244:         [
+D:\Documents\Projets\Games\Personnel\Morse\Includes\Collider.h(61,37): warning C4244:             T=float
+D:\Documents\Projets\Games\Personnel\Morse\Includes\Collider.h(61,37): warning C4244:         ]
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(123,100): warning C4244: 'argument' : conversion de 'int' en 'T', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(123,100): warning C4244:         with
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(123,100): warning C4244:         [
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(123,100): warning C4244:             T=float
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(123,100): warning C4244:         ]
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(123,79): warning C4244: 'argument' : conversion de 'int' en 'T', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(123,79): warning C4244:         with
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(123,79): warning C4244:         [
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(123,79): warning C4244:             T=float
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(123,79): warning C4244:         ]
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(264,20): warning C4018: '<' : incompatibilité signed/unsigned
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(331,64): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(435,114): warning C4244: 'argument' : conversion de 'const T' en 'sf::Int32', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(435,114): warning C4244:         with
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(435,114): warning C4244:         [
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(435,114): warning C4244:             T=float
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(435,114): warning C4244:         ]
+  Screen.cpp
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(436,111): warning C4244: 'argument' : conversion de 'const T' en 'sf::Int32', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(436,111): warning C4244:         with
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(436,111): warning C4244:         [
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(436,111): warning C4244:             T=float
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(436,111): warning C4244:         ]
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(22,46): warning C4244: 'argument' : conversion de 'float' en 'unsigned int', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(38,60): warning C4244: 'argument' : conversion de 'T' en 'const size_t', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(38,60): warning C4244:         with
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(38,60): warning C4244:         [
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(38,60): warning C4244:             T=float
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(38,60): warning C4244:         ]
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(41,57): warning C4244: 'argument' : conversion de 'T' en 'const size_t', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(41,57): warning C4244:         with
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(41,57): warning C4244:         [
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(41,57): warning C4244:             T=float
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(41,57): warning C4244:         ]
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(44,60): warning C4244: 'argument' : conversion de 'T' en 'const size_t', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(44,60): warning C4244:         with
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(44,60): warning C4244:         [
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(44,60): warning C4244:             T=float
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(44,60): warning C4244:         ]
+  Song.cpp
   Génération de code en cours...
-d:\documents\projets\morse\sources\bezier.cpp(96): warning C4172: retourne l'adresse d'une variable locale ou  temporaire
-d:\documents\projets\morse\sources\bezier.cpp(91): warning C4172: retourne l'adresse d'une variable locale ou  temporaire
-d:\documents\projets\morse\sources\bezier.cpp(117): warning C4172: retourne l'adresse d'une variable locale ou  temporaire
-d:\documents\projets\morse\sources\event.cpp(243): warning C4715: 'GameEvent::removeNote' : les chemins de contrôle ne retournent pas tous une valeur
-  RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.exe
-  RhythmGame.vcxproj -> D:\Documents\Projets\Morse\Debug\Morse.pdb (Partial PDB)
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(47,57): warning C4244: 'argument' : conversion de 'T' en 'const size_t', perte possible de données
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(47,57): warning C4244:         with
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(47,57): warning C4244:         [
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(47,57): warning C4244:             T=float
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Screen.cpp(47,57): warning C4244:         ]
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Song.cpp(49): warning C4715: 'Song::getPhaseByTime' : les chemins de contrôle ne retournent pas tous une valeur
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Event.cpp(242): warning C4715: 'GameEvent::removeNote' : les chemins de contrôle ne retournent pas tous une valeur
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Bezier.cpp(106): warning C4172: retourne l'adresse d'une variable locale ou  temporaire
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Bezier.cpp(96): warning C4172: retourne l'adresse d'une variable locale ou  temporaire
+D:\Documents\Projets\Games\Personnel\Morse\Sources\Bezier.cpp(121): warning C4172: retourne l'adresse d'une variable locale ou  temporaire
+  RhythmGame.vcxproj -> D:\Documents\Projets\Games\Personnel\Morse\Debug\Morse.exe

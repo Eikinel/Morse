@@ -3,7 +3,7 @@
 # include "Constants.h"
 # include "Entity.h"
 
-enum			eAccuracy
+enum class ACCURACY
 {
 	ACC_MISS,
 	ACC_BAD,
@@ -12,7 +12,7 @@ enum			eAccuracy
 	ACC_SIZE
 };
 
-class			Note
+class Note
 {
 public:
 	// CONSTRUCTOR

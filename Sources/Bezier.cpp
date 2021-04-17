@@ -3,30 +3,37 @@
 
 Bezier::Bezier(
 	const std::vector<sf::Vector2f>& points,
-	const float& timing,
+	const sf::Time& start,
+	const float& duration,
 	float& bpm,
-	const size_t nbSegments,
-	const sf::Color& color,
-	const bool isClosed) : _bpm(bpm)
+	const sf::Color color,
+	const size_t& nbSegments,
+	const bool& isClosed) : _bpm(bpm)
 {
-    std::cout << "Construct new Bezier curve" << std::endl;
+	std::cout << "Construct new Bezier curve" << std::endl;
 
-    if (points.size() < 2)
-        std::cerr << "Bezier curve needs at lest two points to be generated" << std::endl;
+	if (points.size() < 2) {
+		std::cerr << "Bezier curve needs at lest two points to be generated" << std::endl;
+		return;
+	}
 
     this->_isClosed = isClosed;
 	this->_color = color;
     this->_nbSegments = nbSegments;
-	this->_timing = sf::seconds(timing);
+	this->_start = start;
+	this->_duration = duration;
     this->_points = {};
     this->_controlPoints = {};
     this->_anchorPoints = {};
 	this->_pixel_length = 0;
 
     // Store user's points
-    for (auto point : points)
+	for (auto point : points) {
+		// Set each point to a location based on BPM and curve duration
+		point = sf::Vector2f(point * this->_bpm * this->_duration);
 		// Add point and translate each points to [0 ; 0]
-        this->addPoint(point - points[0]);
+		this->addPoint(point - points[0]);
+	}
 
     // Create control points based on user's points
     // Then create anchor points based on control points
@@ -79,16 +86,19 @@ const std::vector<sf::Vector2f>&  Bezier::getAnchorPoints() const
     return (this->_anchorPoints);
 }
 
-const sf::Vertex&	Bezier::getPointByTiming(const sf::Time& timing) const
+const sf::Vertex& Bezier::getVertexByTiming(const sf::Time& timing) const
 {
-	// timing = curve->getTiming() + duration * [(n / curve->getMaxVertices()) -> tends to 1]
-	// Therefore n = ((timing - curve->getTiming()) / duration) * curve->getMaxVertices()
-	size_t index = ((timing.asSeconds() - this->_timing.asSeconds()) / this->getDuration()) * this->_nbMaxVertices - (this->_nbMaxVertices - this->_bezierCurve.size());
-
-	if (index < this->_bezierCurve.size())
-		return (this->_bezierCurve[index]);
+	const int index = this->getVertexIndexByTiming(timing);
+	
+	if (index >= 0 && index < this->_nbMaxVertices)
+		return this->_bezierCurve[index];
 
 	return (sf::Vertex());
+}
+
+const int Bezier::getVertexIndexByTiming(const sf::Time& timing) const
+{
+	return (int)floor(this->_nbMaxVertices / this->_duration * (timing - this->getStart()).asSeconds()) - (this->_nbMaxVertices - this->_bezierCurve.size());
 }
 
 const sf::Time&	Bezier::getTimingByIndex(const size_t& index) const
@@ -101,9 +111,14 @@ std::vector<sf::Vertex>&	Bezier::getBezierCurve()
     return (this->_bezierCurve);
 }
 
-const sf::Time&	Bezier::getTiming() const
+const sf::Time& Bezier::getStart() const
 {
-	return (this->_timing);
+	return this->_start;
+}
+
+const sf::Time& Bezier::getEnd() const
+{
+	return sf::seconds(this->_start.asSeconds() + this->_duration);
 }
 
 const float&	Bezier::getPixelLength() const
@@ -113,8 +128,12 @@ const float&	Bezier::getPixelLength() const
 
 const float&	Bezier::getDuration() const
 {
-	// Calcul slider duration according to its pixel length and BPM (BPM can change)
-	return (this->_pixel_length / (PIXEL_PER_SECOND * (this->_bpm / 120.f)));
+	return this->_duration;
+}
+
+const sf::Transform&	Bezier::getTransform() const
+{
+	return this->_transform;
 }
 
 
@@ -134,9 +153,19 @@ void    Bezier::setPointById(const int id, const sf::Vector2f& pos)
     this->_points[id] = pos;
 }
 
-void	Bezier::setTiming(const float timing)
+void	Bezier::setStart(const sf::Time& start)
 {
-	this->_timing = sf::seconds(timing);
+	this->_start = start;
+}
+
+void	Bezier::setDuration(const float& duration)
+{
+	this->_duration = duration;
+}
+
+void	Bezier::setTransform(const sf::Transform& transform)
+{
+	this->_transform = transform;
 }
 
 
@@ -149,12 +178,17 @@ void Bezier::addPoint(const sf::Vector2f& point)
 
 void Bezier::addTiming(const float& offset)
 {
-	this->_timing += sf::seconds(offset);
+	this->_duration += offset;
 }
 
-void Bezier::removeVertex(const std::vector<sf::Vertex>::const_iterator it_point)
+void Bezier::removeVertex(const std::vector<sf::Vertex>::const_iterator it_points)
 {
-	this->_bezierCurve.erase(it_point);
+	this->_bezierCurve.erase(it_points);
+}
+
+void Bezier::removeVertexAt(const size_t& index)
+{
+	this->_bezierCurve.erase(this->_bezierCurve.begin(), this->_bezierCurve.begin() + index);
 }
 
 void Bezier::addControlPoint(const sf::Vector2f& point)
@@ -194,7 +228,7 @@ void Bezier::updateControlPoints()
 
 void Bezier::updateAnchorPoints()
 {
-    if (this->_controlPoints.size() > 2) {
+    if (this->_controlPoints.size() >= 2) {
         if (this->_isClosed) {
             sf::Vector2f lastControl = this->_controlPoints[this->_controlPoints.size() - 1];
             this->addAnchorPoint(sf::Vector2f(
@@ -224,7 +258,7 @@ void Bezier::updateBezierCurve()
     std::cout << "Get bezier vertices..." << std::endl;
     int j = 0;
 
-    for (int i = 0, j = 0; i < (int)this->_anchorPoints.size() - 1; i++, j += 2) {
+    for (size_t i = 0, j = 0; i < this->_anchorPoints.size() - 1; i++, j += 2) {
         std::cout << "Create vertice no " << i << std::endl;
         this->cubicBezierVertex(
             this->_anchorPoints[i], this->_anchorPoints[i + 1],
@@ -264,6 +298,6 @@ void Bezier::cubicBezierVertex(
             std::pow(t, 3.f) * endAnchor);
     }
 
-	for (auto curve : ret)
-		this->_bezierCurve.push_back(sf::Vertex(curve, this->_color));
+	for (auto vertex : ret)
+		this->_bezierCurve.push_back(sf::Vertex(vertex, this->_color));
 }

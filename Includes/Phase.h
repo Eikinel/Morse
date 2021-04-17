@@ -1,6 +1,6 @@
 #pragma once
 
-enum			ePhase
+enum			PHASE
 {
 	ATTACK,
 	DEFENSE,
@@ -11,7 +11,7 @@ class			Phase
 {
 public:
 	//-STRUCTORS
-	Phase(const ePhase type, const sf::Time& time)
+	Phase(const PHASE type, const sf::Time& time)
 	{
 		std::string	names[] = { "Attack", "Defense" };
 
@@ -26,7 +26,7 @@ public:
 
 
 	//GETTERS
-	const ePhase	getType() const
+	const PHASE			getType() const
 	{
 		return (this->_type);
 	}
@@ -36,14 +36,14 @@ public:
 		return (this->_name);
 	}
 
-	const sf::Time&	getTime() const
+	const sf::Time&		getTime() const
 	{
 		return (this->_time);
 	}
 
 
 	//SETTERS
-	void	setType(const ePhase type)
+	void	setType(const PHASE type)
 	{
 		this->_type = type;
 	}
@@ -59,7 +59,7 @@ public:
 	}
 
 private:
-	ePhase		_type;
+	PHASE		_type;
 	std::string	_name;
 	sf::Time	_time;
 };

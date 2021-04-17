@@ -9,11 +9,10 @@
 
 
 //CONSTRUCTORS
-IScreen::IScreen(sf::RenderWindow& window, eGamestate state) : _window(window), _state(state)
+IScreen::IScreen(sf::RenderWindow& window, GAMESTATE state) : _window(window), _state(state)
 {
 	sf::Vector2u	win_size(window.getSize());
 
-	this->_index = all_screens.size();
 	this->_frame_limiter = 120;
 	this->_fps = 0.f;
 	if (!this->_main_font.loadFromFile(FONTS_DIR"/Meatloaf Sketched.ttf"))
@@ -28,7 +27,7 @@ IScreen::IScreen(sf::RenderWindow& window, eGamestate state) : _window(window), 
 	this->_clock.restart().asSeconds();
 }
 
-MenuScreen::MenuScreen(sf::RenderWindow& window) : IScreen(window, MENU)
+MenuScreen::MenuScreen(sf::RenderWindow& window) : IScreen(window, GAMESTATE::MENU)
 {
 	std::cout << std::endl << "Creating menu screen" << std::endl;
 	this->_events.push_back(new WindowDefaultEvent); // Event handler for options, close window, etc.
@@ -38,22 +37,22 @@ MenuScreen::MenuScreen(sf::RenderWindow& window) : IScreen(window, MENU)
 
 	this->_buttons.push_back(new Button(GAME_NAME, win_size.y / 4.f, this->_main_font, sf::Vector2f(
 		win_size.x / 2.f,
-		win_size.y / 20.f), CENTER));
+		win_size.y / 20.f), INDENT::CENTER));
 	this->_buttons.push_back(new Button("Play", win_size.y / 6.f, this->_main_font, sf::Vector2f(
 		win_size.x / 2.f,
-		win_size.y / 2.5f), CENTER));
+		win_size.y / 2.5f), INDENT::CENTER));
 	this->_buttons.push_back(new Button("Options", win_size.y / 6.f, this->_main_font, sf::Vector2f(
 		win_size.x / 2.f,
-		win_size.y / 1.6f), CENTER));
+		win_size.y / 1.6f), INDENT::CENTER));
 	this->_buttons.push_back(new Button("Exit", win_size.y / 12.f, this->_main_font, sf::Vector2f(
 		win_size.x / 2.f,
-		win_size.y / 1.15f), CENTER));
-	this->_buttons[1]->onClick(&IEvent::changeScreen, this->_events[1], GAME, static_cast<IScreen *>(this));
-	this->_buttons[2]->onClick(&IEvent::changeScreen, this->_events[1], OPTIONS, static_cast<IScreen *>(this));
-	this->_buttons[3]->onClick(&IEvent::changeScreen, this->_events[1], EXIT, static_cast<IScreen *>(this));
+		win_size.y / 1.15f), INDENT::CENTER));
+	this->_buttons[1]->onClick(&IEvent::changeScreen, this->_events[1], GAMESTATE::GAME, static_cast<IScreen *>(this));
+	this->_buttons[2]->onClick(&IEvent::changeScreen, this->_events[1], GAMESTATE::OPTIONS, static_cast<IScreen *>(this));
+	this->_buttons[3]->onClick(&IEvent::changeScreen, this->_events[1], GAMESTATE::EXIT, static_cast<IScreen *>(this));
 }
 
-GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
+GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAMESTATE::GAME)
 {
 	std::cout << std::endl << "Creating game screen" << std::endl;
 	this->_events.push_back(new WindowDefaultEvent); // Event handler for options, close window, etc.
@@ -65,16 +64,16 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 
 	// Common components
 	this->_speed = 10;
-	this->_accuracy_ratio[eAccuracy::ACC_MISS] = 0.f;
-	this->_accuracy_ratio[eAccuracy::ACC_BAD] = 0.3334f;
-	this->_accuracy_ratio[eAccuracy::ACC_GOOD] = 0.6667f;
-	this->_accuracy_ratio[eAccuracy::ACC_GREAT] = 1.f;
+	this->_accuracy_ratio[(int)ACCURACY::ACC_MISS] = 0.f;
+	this->_accuracy_ratio[(int)ACCURACY::ACC_BAD] = 0.3334f;
+	this->_accuracy_ratio[(int)ACCURACY::ACC_GOOD] = 0.6667f;
+	this->_accuracy_ratio[(int)ACCURACY::ACC_GREAT] = 1.f;
 
 	this->_skin = new Skin();
 	this->_song = new Song("/Test/Born To Be Bone.ogg", this->_speed);
-	this->_metronome.setBuffer(this->_skin->getHitSound(eHitSound::COWBELL));
+	this->_metronome.setBuffer(this->_skin->getHitSound(HIT_SOUND::COWBELL));
 
-	this->_cursor.setTexture(this->_skin->getTexture(eSkinTexture::SK_CURSOR));
+	this->_cursor.setTexture(this->_skin->getTexture(SKIN_TEXTURE::SK_CURSOR));
 	this->_cursor.setOrigin(sf::Vector2f(
 		this->_cursor.getGlobalBounds().width / 2.f,
 		this->_cursor.getGlobalBounds().height / 2.f));
@@ -93,8 +92,8 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAME)
 	va_tmp[1].position = sf::Vector2f(win_size.x, win_size.y / 2.f);
 	this->_cross.push_back(va_tmp);
 
-	// Attach phase components
-	this->_arrow.setTexture(this->_skin->getTexture(eSkinTexture::SK_ARROW));
+	// Attack phase components
+	this->_arrow.setTexture(this->_skin->getTexture(SKIN_TEXTURE::SK_ARROW));
 	this->_arrow.setOrigin(sf::Vector2f(0, this->_arrow.getGlobalBounds().height / 2.f));
 	this->_arrow.setPosition(sf::Vector2f(
 		this->_cursor.getPosition().x,
@@ -146,14 +145,9 @@ std::vector<IEvent *>&	IScreen::getEvents()
 	return (this->_events);
 }
 
-eGamestate				IScreen::getState() const
+GAMESTATE				IScreen::getState() const
 {
 	return (this->_state);
-}
-
-const unsigned int		IScreen::getIndex() const
-{
-	return (this->_index);
 }
 
 const float	IScreen::getFPS() const
@@ -204,7 +198,7 @@ Song&	GameScreen::getSong()
 	return (*this->_song);
 }
 
-const std::vector<eAccuracy>&	GameScreen::getNotesPlayed() const
+const std::vector<ACCURACY>&	GameScreen::getNotesPlayed() const
 {
 	return (this->_notes_played);
 }
@@ -286,9 +280,9 @@ void	GameScreen::addSpeed(const int offset)
 			it->scaleLongNote(this->_speed);
 }
 
-void	GameScreen::setSpriteAccuracy(const eAccuracy accuracy)
+void	GameScreen::setSpriteAccuracy(const ACCURACY accuracy)
 {
-	this->_sprite_accuracy.setTexture(this->_skin->getTexture((eSkinTexture)(accuracy + eSkinTexture::SK_MISS)));
+	this->_sprite_accuracy.setTexture(this->_skin->getTexture((SKIN_TEXTURE)((int)accuracy + (int)SKIN_TEXTURE::SK_MISS)));
 	this->_sprite_accuracy.setOrigin(sf::Vector2f(
 		this->_sprite_accuracy.getGlobalBounds().width / 2.f,
 		this->_sprite_accuracy.getGlobalBounds().height / 2.f));
@@ -297,13 +291,13 @@ void	GameScreen::setSpriteAccuracy(const eAccuracy accuracy)
 		this->_window.getSize().y / 2.f - this->_cursor.getGlobalBounds().height * 1.5f));
 }
 
-void	GameScreen::addUserAccuracy(const eAccuracy accuracy)
+void	GameScreen::addUserAccuracy(const ACCURACY accuracy)
 {
-	this->_current_accuracy += this->_accuracy_ratio[this->_notes_played[this->_notes_played.size() - 1]];
+	this->_current_accuracy += this->_accuracy_ratio[(int)this->_notes_played[this->_notes_played.size() - 1]];
 	this->_user_accuracy = (this->_current_accuracy / this->_notes_played.size()) * 100.f;
 }
 
-void	GameScreen::addAccuracy(const eAccuracy accuracy)
+void	GameScreen::addAccuracy(const ACCURACY accuracy)
 {
 	this->_notes_played.push_back(accuracy);
 	this->setSpriteAccuracy(accuracy);
@@ -317,9 +311,9 @@ void	GameScreen::setPhaseText(const std::string& text)
 
 
 //METHODS
-int		IScreen::run()
+GAMESTATE	IScreen::run()
 {
-	int					status;
+	GAMESTATE			state;
 	sf::Event			event;
 
 	this->_window.clear();
@@ -329,16 +323,17 @@ int		IScreen::run()
 	{
 		for (auto it : this->_events)
 		{
-			if ((status = it->update(*this, event)) != this->_index)
-				return (status);
+			if ((state = it->update(*this, event)) != this->_state)
+				return state;
 		}
 	}
 
 	for (auto it : this->_events)
 		it->draw(*this);
+
 	this->_window.display();
 
-	return (this->_index);
+	return this->_state;
 }
 
 void	IScreen::draw(const sf::Drawable& object, sf::RenderStates states)
@@ -351,9 +346,9 @@ void	IScreen::draw(const sf::Vertex* vertices, size_t vertexCount, sf::Primitive
 	this->_window.draw(vertices, vertexCount, type, states);
 }
 
-int		GameScreen::run()
+GAMESTATE	GameScreen::run()
 {
-	int				status;
+	GAMESTATE		state;
 	sf::Event		event;
 	bool			user_input = false;
 
@@ -367,8 +362,8 @@ int		GameScreen::run()
 		user_input = true;
 		for (auto it : this->_events)
 		{
-			if ((status = it->update(*this, event)) != this->_index)
-				return (status);
+			if ((state = it->update(*this, event)) != this->_state)
+				return state;
 		}
 	}
 
@@ -382,21 +377,21 @@ int		GameScreen::run()
 
 	this->_window.display();
 
-	return (this->_index);
+	return this->_state;
 }
 
 void	GameScreen::restart()
 {
 	std::vector<const sf::Texture *>	textures;
 
-	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_NOTE));
-	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_NOTE_OUTLINE));
-	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN_BEGIN));
-	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN_OUTLINE_BEGIN));
-	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN));
-	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN_OUTLINE));
-	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN_END));
-	textures.push_back(&this->_skin->getTexture(eSkinTexture::SK_LN_OUTLINE_END));
+	textures.push_back(&this->_skin->getTexture(SKIN_TEXTURE::SK_NOTE));
+	textures.push_back(&this->_skin->getTexture(SKIN_TEXTURE::SK_NOTE_OUTLINE));
+	textures.push_back(&this->_skin->getTexture(SKIN_TEXTURE::SK_LN_BEGIN));
+	textures.push_back(&this->_skin->getTexture(SKIN_TEXTURE::SK_LN_OUTLINE_BEGIN));
+	textures.push_back(&this->_skin->getTexture(SKIN_TEXTURE::SK_LN));
+	textures.push_back(&this->_skin->getTexture(SKIN_TEXTURE::SK_LN_OUTLINE));
+	textures.push_back(&this->_skin->getTexture(SKIN_TEXTURE::SK_LN_END));
+	textures.push_back(&this->_skin->getTexture(SKIN_TEXTURE::SK_LN_OUTLINE_END));
 
 	std::cout << "Restarting game" << std::endl;
 

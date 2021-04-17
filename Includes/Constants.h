@@ -1,9 +1,9 @@
 #pragma once
 
 # include <SFML\Graphics.hpp>
-# include <vector>
 # include <iostream>
 # include <memory>
+# include <array>
 
 # define GAME_NAME	"Morse"
 
@@ -22,8 +22,7 @@
 // Game component
 # define MAX_SPEED			100
 # define MAX_TIMING_VIEW	100.f
-# define PIXEL_PER_SECOND	100.f	// For 120 BPM
 
 // Global variable for screens, containing menu, game, etc.
 class IScreen;
-extern std::vector<IScreen *> all_screens;
+extern std::array<std::shared_ptr<IScreen>, 3> all_screens;

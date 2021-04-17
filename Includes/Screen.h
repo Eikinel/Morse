@@ -10,25 +10,25 @@ class Button;
 class Skin;
 class Song;
 
-enum				eGamestate
+enum class GAMESTATE
 {
 	EXIT = -1,
 	MENU,
 	OPTIONS,
-	GAME
+	GAME,
+	GAMESTATE_SIZE
 };
 
-class				IScreen
+class IScreen
 {
 public:
-	IScreen(sf::RenderWindow& window, eGamestate state);
+	IScreen(sf::RenderWindow& window, GAMESTATE state);
 	virtual ~IScreen();
 
 	//GETTERS
 	sf::RenderWindow&		getWindow();
 	std::vector<IEvent *>&	getEvents();
-	eGamestate				getState() const;
-	const unsigned int		getIndex() const;
+	GAMESTATE				getState() const;
 	const float				getFPS() const;
 	const sf::Text&			getFPSText() const;
 	const unsigned int		getFrameLimiter() const;
@@ -39,15 +39,14 @@ public:
 	void	setFrameLimiter(const unsigned int frame_limiter);
 
 	//METHODS
-	virtual int		run();
-	virtual void	draw(const sf::Drawable& object, sf::RenderStates states = sf::RenderStates());
-	virtual void	draw(const sf::Vertex* vertices, size_t vertexCount, sf::PrimitiveType type, const sf::RenderStates states);
+	virtual GAMESTATE	run();
+	virtual void		draw(const sf::Drawable& object, sf::RenderStates states = sf::RenderStates());
+	virtual void		draw(const sf::Vertex* vertices, size_t vertexCount, sf::PrimitiveType type, const sf::RenderStates states);
 
 protected:
 	sf::RenderWindow&		_window;
 	std::vector<IEvent *>	_events;
-	eGamestate				_state;
-	unsigned int			_index;
+	GAMESTATE				_state;
 
 	//FPS handling
 	sf::Clock		_clock;
@@ -82,7 +81,7 @@ public:
 	const float						getUserAccuracy() const;
 	const Skin&						getSkin() const;
 	Song&							getSong();
-	const std::vector<eAccuracy>&	getNotesPlayed() const;
+	const std::vector<ACCURACY>&	getNotesPlayed() const;
 	const sf::Sprite&				getCursor() const;
 	const sf::Sprite&				getSpriteAccuracy() const;
 	const sf::Text&					getPhaseText() const;
@@ -97,24 +96,24 @@ public:
 
 	//SETTERS
 	void	addSpeed(const int offset);
-	void	setSpriteAccuracy(const eAccuracy accuracy);
-	void	addUserAccuracy(const eAccuracy accuracy);
-	void	addAccuracy(const eAccuracy accuracy);
+	void	setSpriteAccuracy(const ACCURACY accuracy);
+	void	addUserAccuracy(const ACCURACY accuracy);
+	void	addAccuracy(const ACCURACY accuracy);
 	void	setPhaseText(const std::string& text);
 
 	//METHODS
-	int		run();
-	void	restart();
+	GAMESTATE	run();
+	void		restart();
 
 private:
 	// Game phase
 	unsigned int	_speed;
-	float			_accuracy_ratio[eAccuracy::ACC_SIZE];
+	float			_accuracy_ratio[(int)ACCURACY::ACC_SIZE];
 	Skin*			_skin;
 	Song*			_song;
 
 	// To put on a Stat class
-	std::vector<eAccuracy>	_notes_played;
+	std::vector<ACCURACY>	_notes_played;
 	float					_user_accuracy;
 	float					_current_accuracy;
 	sf::Sprite				_cursor;

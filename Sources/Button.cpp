@@ -4,7 +4,7 @@
 
 //CONSTRUCTORS
 Button::Button(const std::string& text, const size_t& size, const sf::Vector2f& pos,
-	const eIndent& indent, const std::string& path_to_font, const sf::Texture& texture)
+	const INDENT& indent, const std::string& path_to_font, const sf::Texture& texture)
 {
 	std::string	format[3] = { "LEFT", "CENTER", "RIGHT" };
 
@@ -16,15 +16,15 @@ Button::Button(const std::string& text, const size_t& size, const sf::Vector2f& 
 	this->_text.setOrigin(sf::Vector2f(
 		(this->_text.getGlobalBounds().width / 2.f) * (float)indent,
 		this->_text.getGlobalBounds().height / 2.f));
-	std::cout << "Position avant " << format[indent] << " : " << pos.x << " ; " << pos.y << "." << std::endl;
-	std::cout << "Position apres " << format[indent] << " : " << pos.x + (pos.x / 2.f) * ((float)indent - 1.f) << " ; " << pos.y << "." << std::endl;
+	std::cout << "Position avant " << format[(int)indent] << " : " << pos.x << " ; " << pos.y << "." << std::endl;
+	std::cout << "Position apres " << format[(int)indent] << " : " << pos.x + (pos.x / 2.f) * ((float)indent - 1.f) << " ; " << pos.y << "." << std::endl;
 	this->_text.setPosition(pos + sf::Vector2f(
 		(pos.x / 2.f) * ((float)indent - 1.f), 0));
 	this->_event = NULL;
 }
 
 Button::Button(const std::string& text, const size_t& size, const sf::Font& font,
-	const sf::Vector2f& pos, const eIndent& indent, const sf::Texture& texture)
+	const sf::Vector2f& pos, const INDENT& indent, const sf::Texture& texture)
 {
 	std::string	format[3] = { "LEFT", "CENTER", "RIGHT" };
 

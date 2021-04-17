@@ -3,7 +3,7 @@
 #include "Constants.h"
 #include <SFML\Audio.hpp>
 
-enum	eSkinTexture
+enum class SKIN_TEXTURE
 {
 	SK_NOTE,
 	SK_NOTE_OUTLINE,
@@ -22,7 +22,7 @@ enum	eSkinTexture
 	SK_SIZE
 };
 
-enum	eHitSound
+enum class HIT_SOUND
 {
 	BASS,
 	SNARE,
@@ -37,7 +37,7 @@ enum	eHitSound
 	HIT_SOUND_SIZE
 };
 
-enum			eSkinComponent
+enum class SKIN_COMPONENT
 {
 	TEXTURE,
 	HIT_SOUND,
@@ -51,15 +51,15 @@ public:
 	Skin(const Skin& other);
 	~Skin();
 
-	//GETTERS
-	const sf::Texture&		getTexture(const eSkinTexture& index) const;
-	const sf::SoundBuffer&	getHitSound(const eHitSound& index) const;
+	// GETTERS
+	const sf::Texture&		getTexture(const SKIN_TEXTURE& index) const;
+	const sf::SoundBuffer&	getHitSound(const HIT_SOUND& index) const;
 
-	//METHODS
-	void	addComponent(std::string path, const std::string& filename, const eSkinComponent& type);
+	// METHODS
+	void	addComponent(std::string path, const std::string& filename, const SKIN_COMPONENT& type);
 
 private:
-	//TEXTURES
+	// TEXTURES
 	std::vector<sf::Texture *>		_textures;
 	std::vector<sf::SoundBuffer *>	_hit_sounds;
 };

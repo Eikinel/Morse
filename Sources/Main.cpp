@@ -1,27 +1,23 @@
 #include <SFML\Graphics.hpp>
 #include "Screen.h"
+#include "Constants.h"
 
-std::vector<IScreen *>	all_screens;
+std::array<std::shared_ptr<IScreen>, 3> all_screens;
 
-int		main()
+int	main()
 {
 	sf::RenderWindow	window(sf::VideoMode(
-		sf::VideoMode::getDesktopMode().width / 1.25f, sf::VideoMode::getDesktopMode().height / 1.25f),
+		sf::VideoMode::getDesktopMode().width / 2.f, sf::VideoMode::getDesktopMode().height / 2.f),
 		GAME_NAME,
 		sf::Style::Close);
 
-	// Pushing screens to the stack
-	all_screens.push_back(new MenuScreen(window));
+	// Creates first menu screen
+	all_screens[(int)GAMESTATE::GAME] = std::make_shared<GameScreen>(window);
+
+	GAMESTATE state = GAMESTATE::GAME;
 
 	// Run every elements in the stack. If there's no more screen left or a close request is done, break the loop.
-	int status = MENU;
-	while ((status = all_screens[status]->run()) != EXIT && status < all_screens.size());
+	while (all_screens.size() && (state = all_screens[(int)state]->run()) != GAMESTATE::EXIT);
 
-	// On exit request, delete all screens properly
-	for (auto it : all_screens)
-	{
-		std::cout << "Delete screen n." << it->getIndex() << " : " << std::endl;
-		delete(it);
-	}
-	return (status);
+	return (int)state;
 }
