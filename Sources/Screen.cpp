@@ -70,7 +70,7 @@ GameScreen::GameScreen(sf::RenderWindow& window) :  IScreen(window, GAMESTATE::G
 	this->_accuracy_ratio[(int)ACCURACY::ACC_GREAT] = 1.f;
 
 	this->_skin = new Skin();
-	this->_song = new Song("/Test/Born To Be Bone.ogg", this->_speed);
+	this->_song = new Song("/Test/Gitaroo Man OST - Flyin' to your Heart.ogg", this->_speed);
 	this->_metronome.setBuffer(this->_skin->getHitSound(HIT_SOUND::COWBELL));
 
 	this->_cursor.setTexture(this->_skin->getTexture(SKIN_TEXTURE::SK_CURSOR));

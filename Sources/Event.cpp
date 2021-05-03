@@ -35,12 +35,10 @@ GameEvent::GameEvent()
 {
 	std::cout << "Creating game event" << std::endl;
 
-	//Convert second to milliseconds for proper timing gaps, then apply calcul
-	float	max_timing_view_ms = MAX_TIMING_VIEW * 1000.f;
-	this->_timing_gaps.push_back(sf::Vector2f(std::roundf(-max_timing_view_ms / 400.f), std::roundf(max_timing_view_ms / 400.f))); //GREAT
-	this->_timing_gaps.push_back(sf::Vector2f(std::roundf(-max_timing_view_ms / 133.4f), std::roundf(max_timing_view_ms / 133.4f))); //GOOD
-	this->_timing_gaps.push_back(sf::Vector2f(std::roundf(-max_timing_view_ms / 100.f), std::roundf(max_timing_view_ms / 100.f))); //BAD
-	this->_timing_gaps.push_back(sf::Vector2f(std::roundf(-max_timing_view_ms / 66.7f), std::roundf(max_timing_view_ms / 66.7f))); //MISS
+	this->_timing_gaps.push_back(sf::Vector2f(-25.f, 25.f)); //GREAT
+	this->_timing_gaps.push_back(sf::Vector2f(-50.f, 50.f)); //GOOD
+	this->_timing_gaps.push_back(sf::Vector2f(-100.f, 100.f)); //BAD
+	this->_timing_gaps.push_back(sf::Vector2f(-150.f, 150.f)); //MISS
 
 	this->_phases_events.push_back(new AttackEvent(*this)); // Subevent for the attack phase
 	this->_phases_events.push_back(new DefenseEvent(*this)); // Subevent for the defense phase
@@ -149,6 +147,7 @@ GAMESTATE	GameEvent::update(IScreen& screen, sf::Event& event)
 	sf::Time	elapsed = this->_game_clock.getElapsedTime() + song.getSongOffsetSkip() - this->_skip_freeze;
 	
 	this->_next_notes = song.getNextNotes(elapsed);
+	this->_song_elapsed = this->getGameClock().getElapsedTime() + song.getSongOffsetSkip() - this->getSkipFreeze();
 
 	switch (event.type)
 	{
@@ -198,14 +197,37 @@ GAMESTATE	GameEvent::update(IScreen& screen, sf::Event& event)
 	}
 
 	// For test purpose : play a sound as a metronome depending on the BPM
-	/*if ((int)elapsed.asMilliseconds() % (int)(1 / (song.getBPM() / 60.f) * 1000) <= 20.f) {
+	if ((int)elapsed.asMilliseconds() % (int)(1 / (song.getBPM() / 60.f) * 1000) <= 20.f) {
 		if (!this->_metronome_played) {
 			gscreen->getMetronome().play();
 			this->_metronome_played = true;
 		}
 	}
 	else
-		this->_metronome_played = false;*/
+		this->_metronome_played = false;
+	
+	// If the note hit the death bar and hasn't been played, delete it and set accuracy depending on short or long note (held or not)
+	for (auto& it : this->_next_notes)
+	{
+		if (this->_song_elapsed.asMilliseconds() - it->getTiming().asMilliseconds() > this->_timing_gaps[this->_timing_gaps.size() - 1].y)
+		{
+			//A long not that reach the death bar always has its duration set to 0.
+			if (it->getDuration() == 0.f)
+			{
+				// hasBeenHeld is set to "true" if the user played a long note and released the key.
+				// That means if the long note reached the death bar but the user didn't released the key, he will have a "bad".
+				// It also means that short notes (that cannot be hold) will always display a "miss" if it reaches the death bar.
+				if (!it->hasBeenHeld())
+				{
+					if (it->isHeld())
+						gscreen->addAccuracy(ACCURACY::ACC_BAD);
+					else
+						gscreen->addAccuracy(ACCURACY::ACC_MISS);
+				}
+				song.removeNote(*it);
+			}
+		}
+	}
 
 	return state;
 }
@@ -246,7 +268,7 @@ GAMESTATE	AttackEvent::update(IScreen& screen, sf::Event& event)
 {
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 	Song& song = gscreen->getSong();
-	const sf::Time game_elapsed = this->_gevent.getGameClock().getElapsedTime() + song.getSongOffsetSkip() - this->_gevent.getSkipFreeze();
+	const sf::Time song_elapsed = this->_gevent.getSongElapsed();
 	const std::vector<std::shared_ptr<Note>>& next_notes = this->_gevent.getNextNotes();
 
 	// Mouse events
@@ -271,9 +293,10 @@ GAMESTATE	AttackEvent::update(IScreen& screen, sf::Event& event)
 		sf::Vector2f vcurve_norm = vcurve / (sqrt(pow(vcurve.x, 2) + pow(vcurve.y, 2)));
 
 		// Get time elapsed until the first point of the curve hit the cursor
-		sf::Time curve_elapsed = game_elapsed - curve->getStart();
+		sf::Time curve_elapsed = song_elapsed - curve->getStart();
+		//std::cout << curve_elapsed.asSeconds() << std::endl;
 
-		const int vertexIndex = curve->getVertexIndexByTiming(game_elapsed);
+		const int vertexIndex = curve->getVertexIndexByTiming(song_elapsed);
 		sf::Transform curve_transform = sf::Transform();
 
 		// Set curve's position according to time spent and vector
@@ -282,6 +305,7 @@ GAMESTATE	AttackEvent::update(IScreen& screen, sf::Event& event)
 			cursor_pos.x - vertices[0].position.x + (curve_elapsed.asSeconds() > 0 ? 0 : -curve_elapsed.asSeconds() * song.getBPM() * vcurve_norm.x),
 			cursor_pos.y - vertices[0].position.y + (curve_elapsed.asSeconds() > 0 ? 0 : -curve_elapsed.asSeconds() * song.getBPM() * vcurve_norm.y)
 		);
+		this->_jaj = curve_position;
 
 		curve_transform.translate(curve_position);
 		curve->setTransform(curve_transform);
@@ -298,10 +322,6 @@ GAMESTATE	AttackEvent::update(IScreen& screen, sf::Event& event)
 		{
 			const std::vector<sf::Sprite *>	tmp = it->getSprites();
 			const sf::Vertex& point = curve->getVertexByTiming(it->getTiming());
-
-			const sf::Vector2f offset_curve = sf::Vector2f(
-				point.position.x + curve_position.x + ((it->getTiming().asSeconds() - game_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * vcurve_norm.x,
-				point.position.y + curve_position.y + ((it->getTiming().asSeconds() - game_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * vcurve_norm.y);
 
 			if (point.position != sf::Vertex().position)
 			{
@@ -332,6 +352,40 @@ GAMESTATE	AttackEvent::update(IScreen& screen, sf::Event& event)
 		this->_arrow_trans.rotate(this->_arrow_angle, cursor_pos);
 
 		break;
+	case sf::Event::KeyPressed:
+		if (next_notes.size() > 0)
+		{
+			std::vector<std::shared_ptr<Note>>	same_timing = song.getNotesWithSameTiming(next_notes[0]->getTiming(), next_notes[0]->getLength());
+
+			for (auto it : same_timing)
+			{
+				sf::Vector2i	direction = it->getDirection();
+				sf::Time		note_time = it->getTiming();
+				sf::Time		delta_accuracy = sf::seconds(this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].y);
+				sf::Clock		delay;
+
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
+					delta_accuracy = note_time - song_elapsed;
+
+				if (delta_accuracy > sf::milliseconds(this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].x) &&
+					delta_accuracy < sf::milliseconds(this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].y))
+				{
+					ACCURACY	accuracy = this->_gevent.getAccuracy(delta_accuracy - delay.getElapsedTime());
+
+					std::cout << "Delta accuracy : " << delta_accuracy.asMilliseconds() - delay.getElapsedTime().asMilliseconds() << std::endl;
+
+					if (it->getDuration() == 0.f)
+					{
+						song.removeNote(*it);
+						gscreen->addAccuracy(accuracy);
+					}
+					else
+						it->setHeld(true);
+				}
+			}
+		}
+
+		break;
 	default:
 		break;
 	}
@@ -346,8 +400,17 @@ void	AttackEvent::draw(IScreen& screen)
 
 	for (auto& it : gscreen->getSong().getBezierCurves()) {
 		const std::vector<sf::Vertex>& vertices = it->getBezierCurve();
+		//const std::vector<sf::Vector2f>& points = it->getPoints();
 
-		gscreen->draw(vertices.data(), vertices.size(), sf::LinesStrip, it->getTransform());
+		gscreen->draw(vertices.data(), vertices.size(), sf::LineStrip, it->getTransform());
+
+		/*for (auto& point : points) {
+			sf::CircleShape shape(2);
+
+			shape.setFillColor(sf::Color(255, 0, 0));
+			shape.setPosition(point + this->_jaj);
+			gscreen->draw(shape);
+		}*/
 	}
 
 	gscreen->draw(gscreen->getArrowRadiusShape());
@@ -360,7 +423,7 @@ GAMESTATE	DefenseEvent::update(IScreen& screen, sf::Event& event)
 	GameScreen*	gscreen = static_cast<GameScreen *>(&screen);
 	Song& song = gscreen->getSong();
 	const std::vector<std::shared_ptr<Note>>&	next_notes = this->_gevent.getNextNotes();
-	const sf::Time game_elapsed = this->_gevent.getGameClock().getElapsedTime() + song.getSongOffsetSkip() - this->_gevent.getSkipFreeze();
+	const sf::Time& song_elapsed = this->_gevent.getSongElapsed();
 
 	// Give notes a position
 	for (auto it : next_notes)
@@ -368,8 +431,8 @@ GAMESTATE	DefenseEvent::update(IScreen& screen, sf::Event& event)
 		const std::vector<sf::Sprite *>	tmp = it->getSprites();
 
 		tmp[0]->setPosition(sf::Vector2f(
-			gscreen->getCursor().getPosition().x + ((it->getTiming().asSeconds() - game_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * it->getDirection().x,
-			gscreen->getCursor().getPosition().y + ((it->getTiming().asSeconds() - game_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().y / (2.f * MAX_TIMING_VIEW))) * it->getDirection().y));
+			gscreen->getCursor().getPosition().x + ((it->getTiming().asSeconds() - song_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().x / (2.f * MAX_TIMING_VIEW))) * it->getDirection().x,
+			gscreen->getCursor().getPosition().y + ((it->getTiming().asSeconds() - song_elapsed.asSeconds()) * gscreen->getSpeed() * (gscreen->getWindow().getSize().y / (2.f * MAX_TIMING_VIEW))) * it->getDirection().y));
 		tmp[1]->setPosition(tmp[0]->getPosition());
 
 		if (it->getDuration() > 0.f)
@@ -377,9 +440,9 @@ GAMESTATE	DefenseEvent::update(IScreen& screen, sf::Event& event)
 			sf::Color	playing(it->getBaseColor());
 
 			//If the long note reach the cursor
-			if (it->getTiming().asSeconds() - game_elapsed.asSeconds() <= 0.f)
+			if (it->getTiming().asSeconds() - song_elapsed.asSeconds() <= 0.f)
 			{
-				it->scaleDuration(game_elapsed);
+				it->scaleDuration(song_elapsed);
 				it->scaleLongNote(gscreen->getSpeed());
 				tmp[0]->setPosition(sf::Vector2f(
 					gscreen->getCursor().getPosition().x,
@@ -424,13 +487,13 @@ GAMESTATE	DefenseEvent::update(IScreen& screen, sf::Event& event)
 				sf::Clock		delay;
 
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && direction.y == -1)
-					delta_accuracy = note_time - game_elapsed;
+					delta_accuracy = note_time - song_elapsed;
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
-					delta_accuracy = note_time - game_elapsed;
+					delta_accuracy = note_time - song_elapsed;
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
-					delta_accuracy = note_time - game_elapsed;
+					delta_accuracy = note_time - song_elapsed;
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
-					delta_accuracy = note_time - game_elapsed;
+					delta_accuracy = note_time - song_elapsed;
 
 				if (delta_accuracy > sf::milliseconds(this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].x) &&
 					delta_accuracy < sf::milliseconds(this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].y))
@@ -463,18 +526,18 @@ GAMESTATE	DefenseEvent::update(IScreen& screen, sf::Event& event)
 				ACCURACY		accuracy;
 
 				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && direction.y == -1)
-					delta_accuracy = note_length - game_elapsed;
+					delta_accuracy = note_length - song_elapsed;
 				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Q) && direction.x == -1)
-					delta_accuracy = note_length - game_elapsed;
+					delta_accuracy = note_length - song_elapsed;
 				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::S) && direction.y == 1)
-					delta_accuracy = note_length - game_elapsed;
+					delta_accuracy = note_length - song_elapsed;
 				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::D) && direction.x == 1)
-					delta_accuracy = note_length - game_elapsed;
+					delta_accuracy = note_length - song_elapsed;
 
 				if (delta_accuracy < sf::seconds(this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].y))
 				{
 					std::cout << "Note length = " << note_length.asSeconds() << std::endl;
-					std::cout << "Time elapsed = " << game_elapsed.asSeconds() << std::endl;
+					std::cout << "Time elapsed = " << song_elapsed.asSeconds() << std::endl;
 					std::cout << "Delta accuracy released : " << delta_accuracy.asMilliseconds() - delay.getElapsedTime().asMilliseconds() << std::endl;
 
 					if (!it->hasBeenHeld())
@@ -496,29 +559,6 @@ GAMESTATE	DefenseEvent::update(IScreen& screen, sf::Event& event)
 		break;
 	default:
 		break;
-	}
-
-	// If the note hit the death bar and hasn't been played, delete it and set accuracy depending on short or long note (held or not)
-	for (auto& it : next_notes)
-	{
-		if (it->getTiming().asMilliseconds() - game_elapsed.asMilliseconds() < this->_gevent.getTimingGaps()[this->_gevent.getTimingGaps().size() - 1].x)
-		{
-			//A long not that reach the death bar always has its duration set to 0.
-			if (it->getDuration() == 0.f)
-			{
-				// hasBeenHeld is set to "true" if the user played a long note and released the key.
-				// That means if the long note reached the death bar but the user didn't released the key, he will have a "bad".
-				// It also means that short notes (that cannot be hold) will always display a "miss" if it reaches the death bar.
-				if (!it->hasBeenHeld())
-				{
-					if (it->isHeld())
-						gscreen->addAccuracy(ACCURACY::ACC_BAD);
-					else
-						gscreen->addAccuracy(ACCURACY::ACC_MISS);
-				}
-				song.removeNote(*it);
-			}
-		}
 	}
 
 	return screen.getState();
@@ -544,9 +584,14 @@ std::vector<bool>&	IEvent::getToggleOptions()
 	return (this->_toggle_options);
 }
 
-const sf::Clock&	GameEvent::getGameClock() const
+const sf::Clock& GameEvent::getGameClock() const
 {
 	return (this->_game_clock);
+}
+
+const sf::Time& GameEvent::getSongElapsed() const
+{
+	return (this->_song_elapsed);
 }
 
 const std::vector<std::shared_ptr<Note>>&	GameEvent::getNextNotes() const

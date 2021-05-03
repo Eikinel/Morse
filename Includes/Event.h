@@ -85,6 +85,7 @@ public:
 
 	//GETTERS
 	const sf::Clock&							getGameClock() const;
+	const sf::Time&								getSongElapsed() const;
 	const std::vector<std::shared_ptr<Note>>&	getNextNotes() const;
 	const std::vector<sf::Vector2f>				getTimingGaps() const;
 	const ACCURACY								getAccuracy(const sf::Time& delta) const;
@@ -97,6 +98,7 @@ public:
 private:
 	sf::Clock							_game_clock;
 	sf::Time							_skip_freeze; // Freeze the time when the user skipped the song
+	sf::Time							_song_elapsed; // Song time offset
 	std::shared_ptr<Phase>				_current_phase;
 	std::vector<IEvent *>				_phases_events;
 	std::vector<std::shared_ptr<Note>>	_next_notes;
@@ -114,9 +116,10 @@ public:
 	void		draw(IScreen& screen);
 
 private:
-	GameEvent&					_gevent;
-	float						_arrow_angle;		// Angle value of the arrow
-	sf::Transform				_arrow_trans;		// Transformation to apply to the arrow
+	GameEvent&		_gevent;
+	float			_arrow_angle;		// Angle value of the arrow
+	sf::Transform	_arrow_trans;		// Transformation to apply to the arrow
+	sf::Vector2f	_jaj;
 };
 
 class				DefenseEvent : public IEvent

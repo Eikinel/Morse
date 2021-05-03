@@ -3,8 +3,8 @@
 
 Bezier::Bezier(
 	const std::vector<sf::Vector2f>& points,
+	const std::vector<float>& durations,
 	const sf::Time& start,
-	const float& duration,
 	float& bpm,
 	const sf::Color color,
 	const size_t& nbSegments,
@@ -12,7 +12,7 @@ Bezier::Bezier(
 {
 	std::cout << "Construct new Bezier curve" << std::endl;
 
-	if (points.size() < 2) {
+	if (points.size() < 1) {
 		std::cerr << "Bezier curve needs at lest two points to be generated" << std::endl;
 		return;
 	}
@@ -21,18 +21,32 @@ Bezier::Bezier(
 	this->_color = color;
     this->_nbSegments = nbSegments;
 	this->_start = start;
-	this->_duration = duration;
+	this->_duration = 0;
+	this->_durations = durations;
     this->_points = {};
     this->_controlPoints = {};
     this->_anchorPoints = {};
 	this->_pixel_length = 0;
 
+	size_t userPointsIndex = 0;
+	size_t index = 0;
+
+	this->addPoint({ 0, 0 });
+
     // Store user's points
 	for (auto point : points) {
-		// Set each point to a location based on BPM and curve duration
-		point = sf::Vector2f(point * this->_bpm * this->_duration);
-		// Add point and translate each points to [0 ; 0]
-		this->addPoint(point - points[0]);
+		this->_duration += durations[userPointsIndex];
+
+		for (float i = 0.25f; i <= durations[userPointsIndex]; i += 0.25f) {
+			const sf::Vector2f subpoint = (point / durations[userPointsIndex]) * i;
+			std::cout << "Subpoint " << i * 4.f << "= [" << subpoint.x << " ; " << subpoint.y << "]" << std::endl;
+			// Set each point to a location based on BPM and curve duration
+			// Add point and translate each points to [0 ; 0]
+			this->addPoint(subpoint * 300.f * durations[userPointsIndex] + this->_points[index - (i * 4.f) + 1]);
+			index++;
+		}
+
+		userPointsIndex++;
 	}
 
     // Create control points based on user's points
@@ -50,7 +64,8 @@ Bezier::Bezier(
 		this->_pixel_length += sqrt(pow(vec.x, 2) + pow(vec.y, 2));
 	}
 
-	std::cout << "Curve length : " << this->_pixel_length << std::endl;
+	std::cout << "Cruves vertices number : " << this->_nbMaxVertices << std::endl;
+	std::cout << "Curve pixel length : " << this->_pixel_length << std::endl;
 
     std::cout << "Done !" << std::endl << std::endl;
 }
@@ -260,9 +275,11 @@ void Bezier::updateBezierCurve()
 
     for (size_t i = 0, j = 0; i < this->_anchorPoints.size() - 1; i++, j += 2) {
         std::cout << "Create vertice no " << i << std::endl;
-        this->cubicBezierVertex(
-            this->_anchorPoints[i], this->_anchorPoints[i + 1],
-            this->_controlPoints[j], this->_controlPoints[j + 1]);
+		std::cout << "[" << this->_points[i].x << " ; " << this->_points[i].y << "]" << std::endl;
+		this->cubicBezierVertex(
+			this->_anchorPoints[i], this->_anchorPoints[i + 1],
+			this->_controlPoints[j], this->_controlPoints[j + 1]
+		);
     }
 }
 
@@ -281,7 +298,8 @@ void Bezier::cubicBezierVertex(
     const sf::Vector2f& startAnchor,
     const sf::Vector2f& endAnchor,
     const sf::Vector2f& startControl,
-    const sf::Vector2f& endControl)
+    const sf::Vector2f& endControl
+)
 {
     std::vector<sf::Vector2f> ret;
     if (this->_nbSegments <= 0)

@@ -10,7 +10,7 @@ Song::Song(const std::string& file, unsigned int& speed) : _speed(speed)
 
 	// To do : Parse a song file
 
-	this->_bpm = 120.f;
+	this->_bpm = 155.f;
 	this->_song_offset_skip = sf::Time::Zero;
 	if (!this->_music.openFromFile(SONG_DIR + file))
 		std::cerr << "Can't open file with path : " << file << std::endl;
@@ -153,36 +153,51 @@ void	Song::restart(std::vector<const sf::Texture *>& textures)
 	this->_bezier_curves = std::vector<std::unique_ptr<Bezier>>();
 	this->_notes = std::vector<std::shared_ptr<Note>>();
 
-	Bezier straight({
-		sf::Vector2f(0, 0),
-		sf::Vector2f(-1, -2),
-		},
-		sf::seconds(2.f),
-		2.f,
-		this->_bpm
-		);
-
-	Bezier curved2({
-		sf::Vector2f(0, 0),
-		sf::Vector2f(-1, -2),
-		sf::Vector2f(-0.5, -1.75),
-		sf::Vector2f(1, -1),
-		sf::Vector2f(2, 0),
-		},
-		sf::seconds(6.f),
-		10.f,
-		this->_bpm
-		);
+	Bezier verse1({ {0.5, 1}, {1, 0}, {0.5, 1}, {1, 0}, {0.5, -1} }, { 2.75f, 2.5f, 0.25f, 0.5f, 1.5f }, sf::seconds(27.f), this->_bpm);
 
 	this->_phases.push_back(std::make_shared<Phase>(PHASE::ATTACK, sf::seconds(0.f)));
-	/*this->_notes.push_back(std::make_shared<Note>(sf::seconds(offset + 3.f), 0.f));
-	this->_notes.push_back(std::make_shared<Note>(sf::seconds(offset + 3.5f), 0.f));
-	this->_notes.push_back(std::make_shared<Note>(sf::seconds(offset + 5.f), 0.f));
-	this->_notes.push_back(std::make_shared<Note>(sf::seconds(offset + 6.f), 0.f));
-	this->_notes.push_back(std::make_shared<Note>(sf::seconds(offset + 7.f), 0.f));
-	this->_notes.push_back(std::make_shared<Note>(sf::seconds(offset + 8.f), 0.f));*/
-	this->_bezier_curves.emplace_back(new Bezier(straight));
-	this->_bezier_curves.emplace_back(new Bezier(curved2));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(28.f) + sf::seconds(60 / this->getBPM() / 2 * 1), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(28.f) + sf::seconds(60 / this->getBPM() / 2 * 2), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(28.f) + sf::seconds(60 / this->getBPM() / 2 * 3), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(28.f) + sf::seconds(60 / this->getBPM() / 2 * 4), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(28.f) + sf::seconds(60 / this->getBPM() / 2 * 5), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(28.f) + sf::seconds(60 / this->getBPM() / 2 * 6), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(28.f) + sf::seconds(60 / this->getBPM() / 2 * 7), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(28.f) + sf::seconds(60 / this->getBPM() / 2 * 8), 0.f));
+
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(29.55f) + sf::seconds(60 / this->getBPM() / 2 * 2), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(29.55f) + sf::seconds(60 / this->getBPM() / 2 * 3), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(29.55f) + sf::seconds(60 / this->getBPM() / 2 * 4), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(29.55f) + sf::seconds(60 / this->getBPM() / 2 * 5), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(29.55f) + sf::seconds(60 / this->getBPM() / 2 * 6), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(29.55f) + sf::seconds(60 / this->getBPM() / 2 * 7), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(29.55f) + sf::seconds(60 / this->getBPM() / 2 * 8), 0.f));
+
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(31.1f) + sf::seconds(60 / this->getBPM() / 2 * 2), 0.f));
+
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(31.1f) + sf::seconds(60 / this->getBPM() / 2 * 4), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(31.1f) + sf::seconds(60 / this->getBPM() / 2 * 5), 0.f));
+
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(31.1f) + sf::seconds(60 / this->getBPM() / 2 * 8), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(31.1f) + sf::seconds(60 / this->getBPM() / 2 * 9), 0.f));
+
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(31.1f) + sf::seconds(60 / this->getBPM() / 2 * 11), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(31.1f) + sf::seconds(60 / this->getBPM() / 2 * 12), 0.f));
+
+	/*this->_notes.push_back(std::make_shared<Note>(sf::seconds(29.8f), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(30.05f), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(30.3f), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(30.55f), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(30.8f), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(31.05f), 0.f));
+
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(31.25f), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(32.f), 0.f));
+
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(32.75f), 0.f));
+	this->_notes.push_back(std::make_shared<Note>(sf::seconds(33.25f), 0.f));*/
+
+	this->_bezier_curves.emplace_back(new Bezier(verse1));
 
 	/*this->_phases.push_back(std::make_shared<Phase>(PHASE::DEFENSE, sf::seconds(21.f)));
 	this->_notes.push_back(std::make_shared<Note>(sf::seconds(23.1f), 0.f, sf::Vector2i(0, 1)));

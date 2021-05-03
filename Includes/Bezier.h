@@ -7,11 +7,11 @@ class   Bezier
 public:
     Bezier(
 		const std::vector<sf::Vector2f>& points,
+		const std::vector<float>& durations,
 		const sf::Time& start,
-		const float& duration,
 		float& bpm,
 		const sf::Color color = sf::Color::Green,
-		const size_t& nbSegments = 200,
+		const size_t& nbSegments = 50,
 		const bool& isClosed = false);
     ~Bezier()
     {
@@ -61,7 +61,8 @@ private:
         const sf::Vector2f& startAnchor,
         const sf::Vector2f& endAnchor,
         const sf::Vector2f& startControl,
-        const sf::Vector2f& endControl);
+        const sf::Vector2f& endControl
+	);
 
     // VARIABLES
     bool                        _isClosed;
@@ -74,6 +75,7 @@ private:
     std::vector<sf::Vertex>		_bezierCurve;
 	sf::Time					_start;
 	float						_duration;
+	std::vector<float>			_durations;
 	float						_pixel_length;
 	float&						_bpm;
 	sf::Transform				_transform;

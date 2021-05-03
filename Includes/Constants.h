@@ -21,7 +21,7 @@
 
 // Game component
 # define MAX_SPEED			100
-# define MAX_TIMING_VIEW	100.f
+# define MAX_TIMING_VIEW	20.f
 
 // Global variable for screens, containing menu, game, etc.
 class IScreen;
